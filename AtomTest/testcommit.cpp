@@ -1,1 +1,1 @@
-//This is a test commit from Atom
+// Deleted the original commit text
