@@ -3,4 +3,4 @@ Contains all robot code files used in the 2018-19 VEX U Robotics Competition: Tu
 
 In Turning Point, two robots are built by each VEX U team. **Both** robots are contained in this repository, designated by:
 
-[/vexu-2018-2019/Robot_1](/Robot_1) and [/vexu-2018-2019/Robot_2](/Robot_2).
+[/vexu-2018-2019/Robot_Mini](/Robot_Mini) and [/vexu-2018-2019/Robot_2](/Robot_2).
