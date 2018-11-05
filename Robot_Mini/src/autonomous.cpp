@@ -13,10 +13,5 @@
  */
 void autonomous()
 {
-
-}
-
-void PYROAutonomous1()
-{
   
 }
