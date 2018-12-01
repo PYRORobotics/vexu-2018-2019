@@ -1,4 +1,6 @@
 #include "../include/main.h"
+//#include "../../Shared/shared.hpp"
+
 
 
 /**
@@ -11,6 +13,9 @@ void initialize()
 {
 	pros::lcd::initialize();
 	//Setup the serial comms
+	serialInit();
+	//taskSerialRead().resume();
+	//while can't connect -> throw error (LEDs?/screen write) and block program from exiting init()
 }
 
 /**
@@ -21,6 +26,9 @@ void initialize()
 void disabled()
 {
 	//Send serial command to Pi to stop sending data packets
+
+	//Stop serial read task
+	//taskSerialRead().suspend();
 }
 
 /**
@@ -34,6 +42,8 @@ void disabled()
  */
 void competition_initialize()
 {
-	//Send serial command to Pi to start sending data packets
+	//Send serial command to Pi to start sending data packets (Task?)
+	//taskSerialRead().resume();
 	//Auto selector on the LCD (while loop?)
+	autoSelection = 1;
 }

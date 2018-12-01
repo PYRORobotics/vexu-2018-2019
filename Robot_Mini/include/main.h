@@ -37,7 +37,10 @@
 #define PROS_USE_LITERALS
 
 #include "api.h"
-#include "../../Shared/shared.hpp"
+#include "../include/ports.hpp"
+#include "../include/global.hpp"
+#include "../include/screen.hpp"
+#include "../include/robot.hpp"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do

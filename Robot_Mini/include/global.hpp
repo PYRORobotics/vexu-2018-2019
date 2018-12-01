@@ -1,5 +1,10 @@
-#include "../Robot_Mini/include/api.h"
-#include "../Robot_Mini/include/pros/apix.h"
+#include "api.h"
+
+extern int autoSelection;
+
+extern pros::Task taskSerialRead();
+
+
 
 extern float heading;
 extern float ax;

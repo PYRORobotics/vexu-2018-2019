@@ -1,4 +1,31 @@
 #include "../include/main.h"
+//#include "../../Shared/shared.hpp"
+
+
+void autonomous0()
+{
+
+}
+
+void autonomous1()
+{
+
+}
+
+void autonomousSelect()
+{
+  switch (autoSelection) {
+    case 0:
+      autonomous0();
+      break;
+    case 1:
+      autonomous1();
+      break;
+    default:
+      // Do Nothing for Safety
+      break;
+  }
+}
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -13,5 +40,6 @@
  */
 void autonomous()
 {
-  
+  //taskSerialRead().resume();
+  autonomousSelect();
 }
