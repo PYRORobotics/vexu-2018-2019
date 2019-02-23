@@ -612,12 +612,12 @@ void Robot::teleop()
     {
       //if(fabs(LiftObj.errorPosition) > 0.1)
       //LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) * 0.5, 0);
-      LargeRobot.LiftObj.liftAndFlip();
+
     }
     case E_CONTROLLER_DIGITAL_B:
-    if(Controller1.get_digital(E_CONTROLLER_DIGITAL_B))
+    if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_B))
     {
-
+      LargeRobot.LiftObj.liftAndFlip();
     }
     case E_CONTROLLER_DIGITAL_X:
     if(Controller1.get_digital(E_CONTROLLER_DIGITAL_X))
