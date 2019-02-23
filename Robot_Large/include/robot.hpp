@@ -21,6 +21,7 @@ void disabled(void);
  *  See robot.cpp for detailed definitions
  */
 
+extern bool doLiftAndFlip;
 enum driveType
 {
   forward,

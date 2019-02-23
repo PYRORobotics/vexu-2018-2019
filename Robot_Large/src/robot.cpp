@@ -394,17 +394,32 @@ void Lift::run(int speed, double inches = -1)
   M_Lift_L = speed;
   M_Lift_R = speed;
 }
+bool doLiftAndFlip = false;
 
 void Lift::liftAndFlip()
 {
+  doLiftAndFlip = true;
+  //Put in liftAndFlipTask()
+  /*
   M_Lift_L.move_relative(1.5, 50); //FIXME
   M_Lift_R.move_relative(1.5, 50); //FIXME
-  delay(2000); //FIXME
-  LargeRobot.ClawObj.rotate();
-  delay(2000); //FIXME
+  delay(1000); //FIXME
+  if(LargeRobot.ClawObj.clockwise)
+  {
+    M_Claw_Rotate.move_relative(180, 120);
+    LargeRobot.ClawObj.clockwise = false;
+  }
+  else
+  {
+    M_Claw_Rotate.move_relative(-180, 120);
+    LargeRobot.ClawObj.clockwise = true;
+  }
+  delay(500); //FIXME
   M_Lift_L.move_relative(-1.5, 50); //FIXME
   M_Lift_R.move_relative(-1.5, 50); //FIXME
+  */
 }
+
 void Lift::scoreCap()
 {
   LargeRobot.drive(0);
@@ -506,11 +521,16 @@ void Robot::teleop()
   DrivetrainObj.arcadeDrive(Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_X),
                           Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_Y));
 
+  LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y));
+  M_Flywheel_Turret = Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_X); // FIXME
+  M_Flywheel_Hood = Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) / 2;
 
-  IntakeObj.run((Controller0.get_digital(E_CONTROLLER_DIGITAL_L1))?100:(Controller0.get_digital(E_CONTROLLER_DIGITAL_L2))?-100:0, both);
+
+
+  //IntakeObj.run((Controller0.get_digital(E_CONTROLLER_DIGITAL_L1))?100:(Controller0.get_digital(E_CONTROLLER_DIGITAL_L2))?-100:0, both);
   //TurretObj.run(0);
 
-  M_Flywheel_Hood = Controller0.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
+  //M_Flywheel_Hood = Controller0.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y);
 
   //pros::lcd::print(7, "Hood Angle: %f Deg", LargeRobot.TurretObj.currentHoodAngle);
 
@@ -526,13 +546,13 @@ void Robot::teleop()
       if(Controller0.get_digital_new_press(E_CONTROLLER_DIGITAL_A))
       {
         contValues[0] = "A";
-        TurretObj.run(600);
+
       }
     case E_CONTROLLER_DIGITAL_B:
       if(Controller0.get_digital(E_CONTROLLER_DIGITAL_B))
       {
         contValues[1] = "B";
-        TurretObj.run(0);
+
       }
     case E_CONTROLLER_DIGITAL_X:
       if(Controller0.get_digital(E_CONTROLLER_DIGITAL_X))
@@ -545,43 +565,56 @@ void Robot::teleop()
         contValues[3] = "Y";
       }
     case E_CONTROLLER_DIGITAL_L1:
-      if(Controller0.get_digital(E_CONTROLLER_DIGITAL_L1))
+      if(Controller0.get_digital_new_press(E_CONTROLLER_DIGITAL_L1))
       {
         contValues[4] = "L1";
-        //intakeSpeed = -50;
+        if(fabs(ClawObj.errorClamp <= 0.2) && M_Claw_Main.get_actual_velocity() < 2)
+        {
+          if(ClawObj.currentClawPosition == open)
+          {
+            ClawObj.goToPosition(closed);
+            ClawObj.currentClawPosition = closed;
+          }
+          else if(ClawObj.currentClawPosition == closed)
+          {
+            ClawObj.goToPosition(open);
+            ClawObj.currentClawPosition = open;
+          }
+        }
       }
     case E_CONTROLLER_DIGITAL_L2:
       if(Controller0.get_digital(E_CONTROLLER_DIGITAL_L2))
       {
         contValues[5] = "L2";
+        LargeRobot.LiftObj.liftAndFlip();
       }
     case E_CONTROLLER_DIGITAL_R1:
-    if(Controller0.get_digital_new_press(E_CONTROLLER_DIGITAL_R1))
+    if(Controller0.get_digital(E_CONTROLLER_DIGITAL_R1))
     {
       contValues[6] = "R1";
-      if(fabs(ClawObj.errorClamp <= 0.2) && M_Claw_Main.get_actual_velocity() < 2)
-      {
-        if(ClawObj.currentClawPosition == open)
-        {
-          ClawObj.goToPosition(closed);
-          ClawObj.currentClawPosition = closed;
-        }
-        else if(ClawObj.currentClawPosition == closed)
-        {
-          ClawObj.goToPosition(open);
-          ClawObj.currentClawPosition = open;
-        }
-      }
+      M_Intake_Main = 127;
+      M_Intake_Preflywheel = -127;
+    }
+    else
+    {
+      M_Intake_Main = 0;
+      M_Intake_Preflywheel = 0;
     }
     case E_CONTROLLER_DIGITAL_R2:
       if(Controller0.get_digital_new_press(E_CONTROLLER_DIGITAL_R2))
       {
-        contValues[7] = "R2";
-        if(fabs(ClawObj.errorRotate <= 2) && M_Claw_Rotate.get_actual_velocity() < 2)
-        {
-          ClawObj.rotate();
-          ClawObj.clockwise = !ClawObj.clockwise;
-        }
+        M_Intake_Main = -80;
+        M_Intake_Preflywheel = -80;
+      }
+      else if(Controller1.get_digital(E_CONTROLLER_DIGITAL_A))
+      {
+        M_Intake_Main = 127;
+        M_Intake_Preflywheel = 127;
+      }
+      else
+      {
+        M_Intake_Main = 0;
+        M_Intake_Preflywheel = 0;
       }
     case E_CONTROLLER_DIGITAL_UP:
       if(Controller0.get_digital(E_CONTROLLER_DIGITAL_UP))
@@ -616,12 +649,12 @@ void Robot::teleop()
     {
       //if(fabs(LiftObj.errorPosition) > 0.1)
       //LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) * 0.5, 0);
-
+      TurretObj.run(500);
     }
     case E_CONTROLLER_DIGITAL_B:
     if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_B))
     {
-      LargeRobot.LiftObj.liftAndFlip();
+      TurretObj.run(0);
     }
     case E_CONTROLLER_DIGITAL_X:
     if(Controller1.get_digital(E_CONTROLLER_DIGITAL_X))
@@ -631,11 +664,13 @@ void Robot::teleop()
     case E_CONTROLLER_DIGITAL_Y:
     if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_Y))
     {
-      LargeRobot.LiftObj.scoreCap();
+      TurretObj.run(500);
+      //LargeRobot.LiftObj.scoreCap();
     }
     case E_CONTROLLER_DIGITAL_L1:
     if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_L1))
     {
+      /*
       if(fabs(LiftObj.errorPosition <= 0.2) && M_Lift_L.get_actual_velocity() < 2)
       {
         if(LiftObj.currentLiftPosition == ground)
@@ -653,11 +688,11 @@ void Robot::teleop()
           //LiftObj.goToPosition(open);
           LiftObj.currentLiftPosition = midPost; //FIXME
         }
-      }
+      }*/
     }
     case E_CONTROLLER_DIGITAL_L2:
     if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_L2))
-    {
+    {/*
       if(fabs(LiftObj.errorPosition <= 0.2) && M_Lift_L.get_actual_velocity() < 2)
       {
         if(LiftObj.currentLiftPosition == ground)
@@ -674,7 +709,7 @@ void Robot::teleop()
           LiftObj.goToPosition(flipPosition);
           LiftObj.currentLiftPosition = flipPosition;
         }
-      }
+      }*/
     }
     case E_CONTROLLER_DIGITAL_R1:
 /*    if(Controller1.get_digital(E_CONTROLLER_DIGITAL_R1))
@@ -705,7 +740,7 @@ void Robot::teleop()
     case E_CONTROLLER_DIGITAL_R2:
       if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_R2))
       {
-        if(fabs(ClawObj.errorRotate <= 2) && M_Claw_Rotate.get_actual_velocity() < 2)
+        if(fabs(ClawObj.errorRotate <= 1) && M_Claw_Rotate.get_actual_velocity() < 2) //FIXME 2->1?
         {
           ClawObj.rotate();
           ClawObj.clockwise = !ClawObj.clockwise;
@@ -743,7 +778,7 @@ void Robot::teleop()
   contValues[15] = std::to_string(Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_X));
 
 }
-
+/*
 void Robot::teleoptesting()
 {
 //  DrivetrainObj.tankDrive(Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_Y),
@@ -917,7 +952,7 @@ void Robot::teleoptesting()
   contValues[14] = std::to_string(Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_Y));
   contValues[15] = std::to_string(Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_X));
 
-}
+}*/
 
 void Robot::drive(int speed)
 {

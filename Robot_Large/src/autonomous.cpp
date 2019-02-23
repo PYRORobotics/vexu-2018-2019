@@ -366,53 +366,51 @@ void UpdateTelemetryTaskAUTO(void* param)
  * from where it left off.
  */
  void autonomous()
+ {
+   if(selectedAutoMode == red1 || selectedAutoMode == blue1)  //FIXME
    {
-   M_Drivetrain_LF.tare_position();
-   int startTime = millis();
-   // PositionPID:Task
-   Task PositionPID(PositionPIDTask, NULL);
-   //Task LiftPID(LiftPIDTask, NULL);
+     M_Drivetrain_LF.tare_position();
+     int startTime = millis();
+     // PositionPID:Task
+     Task PositionPID(PositionPIDTask, NULL);
+     //Task LiftPID(LiftPIDTask, NULL);
 
-   int routeID = -1;
-   routeFinished = true;
+     int routeID = -1;
+     routeFinished = true;
 
-   while(millis() - startTime < 44000)
-   {
-     if(routeFinished == true)
+     while(millis() - startTime < 44000)
      {
-       if(routeID>=0) delay(1000);
-       routeID++;
-       M_Drivetrain_LF.tare_position();
-
-
-
-       switch (routeID)
+       if(routeFinished == true)
        {
-         case 0:
-           std::cout << "START R0 - DF:C1, BI:1\n";
-           moveType = forward;
-           setpointPosition = 36;
-           LargeRobot.runIntake(127, mainIntake);
-           break;
-         case 1:
-           std::cout << "START R1 - DR:24, BI:0\n";
-           moveType = reverse;
-           setpointPosition = -28;
-           LargeRobot.runIntake(0, mainIntake);
-           break;
-         case 2:
-           std::cout << "START R2\n";
-           moveType = leftPoint;
-           setpointPosition = 95;
-           break;
-         case 3:
-          LargeRobot.eStop();
-          break;
-         default:
-           PositionPID.suspend();
-           break;
+         if(routeID>=0) delay(1000);
+         routeID++;
+         M_Drivetrain_LF.tare_position();
+
+
+
+         switch (routeID)
+         {
+           case 0:
+             std::cout << "START R0 - DF:C1, BI:1\n";
+             moveType = forward;
+             setpointPosition = 36;
+             LargeRobot.runIntake(127, mainIntake);
+             break;
+           case 1:
+             std::cout << "START R1 - DR:24, BI:0\n";
+             moveType = reverse;
+             setpointPosition = -12;
+             break;
+           case 2:
+            LargeRobot.runIntake(0, mainIntake);
+            LargeRobot.eStop();
+            break;
+           default:
+             PositionPID.suspend();
+             break;
+         }
+         routeFinished = false;
        }
-       routeFinished = false;
      }
    }
    std::cout << "AUTONOMOUS OVER!\n";

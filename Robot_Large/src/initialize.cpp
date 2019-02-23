@@ -34,7 +34,11 @@ void initialize()
 {
 	//Task ReadSerial(SerialReadTask, NULL);
 	//Task UpdateTelemetry(UpdateTelemetryTask, NULL);
-	pros::lcd::initialize();
+  Screen_Init_SetStlyes();
+  lv_obj_t * scr = lv_obj_create(NULL, NULL);
+  lv_scr_load(scr);                                   /*Load the screen*/
+  Screen_Background_Init();
+  Screen_Title_Title();
 
 	M_Drivetrain_LF.set_brake_mode(MOTOR_BRAKE_HOLD);
 	M_Drivetrain_LM.set_brake_mode(MOTOR_BRAKE_HOLD);
