@@ -407,12 +407,16 @@ void Lift::liftAndFlip()
 }
 void Lift::scoreCap()
 {
+  LargeRobot.drive(0);
   M_Lift_L.move_relative(-2 / M_PI / 4, 50); //FIXME
   M_Lift_R.move_relative(-2 / M_PI / 4, 50); //FIXME
   delay(2000); //FIXME
   LargeRobot.ClawObj.goToPosition(open);
   LargeRobot.ClawObj.currentClawPosition = open;
-  delay(2000); //FIXME
+  delay(300);
+  LargeRobot.drive(80);
+  delay(1000); //FIXME
+  LargeRobot.drive(0);
   M_Lift_L.move_relative(2 / M_PI / 4, 50); //FIXME
   M_Lift_R.move_relative(2 / M_PI / 4, 50); //FIXME
 }
