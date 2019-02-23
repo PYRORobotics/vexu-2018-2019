@@ -182,6 +182,8 @@ class Lift
     void control(bool goingUp);
     void run(int speed, double inches);
     void goToPosition(LiftPosition liftPosition);
+    void liftAndFlip();
+    void scoreCap();
 };
 
 /* Robot Class */
@@ -192,12 +194,13 @@ class Robot
     Drivetrain DrivetrainObj;
     Intake IntakeObj;
 
-    Claw ClawObj;
+
     Lift LiftObj;
     //static double position[2];
 
   public:
     Telemetry telemetry;
+    Claw ClawObj;
     double lastPosition[2];
     double setpoint_theta;
     double setpoint_distance;

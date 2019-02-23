@@ -395,6 +395,28 @@ void Lift::run(int speed, double inches = -1)
   M_Lift_R = speed;
 }
 
+void Lift::liftAndFlip()
+{
+  M_Lift_L.move_relative(1.5, 50); //FIXME
+  M_Lift_R.move_relative(1.5, 50); //FIXME
+  delay(2000); //FIXME
+  LargeRobot.ClawObj.rotate();
+  delay(2000); //FIXME
+  M_Lift_L.move_relative(-1.5, 50); //FIXME
+  M_Lift_R.move_relative(-1.5, 50); //FIXME
+}
+void Lift::scoreCap()
+{
+  M_Lift_L.move_relative(-2 / M_PI / 4, 50); //FIXME
+  M_Lift_R.move_relative(-2 / M_PI / 4, 50); //FIXME
+  delay(2000); //FIXME
+  LargeRobot.ClawObj.goToPosition(open);
+  LargeRobot.ClawObj.currentClawPosition = open;
+  delay(2000); //FIXME
+  M_Lift_L.move_relative(2 / M_PI / 4, 50); //FIXME
+  M_Lift_R.move_relative(2 / M_PI / 4, 50); //FIXME
+}
+
 void Lift::goToPosition(LiftPosition liftPosition)
 {
   double inches;
@@ -586,10 +608,11 @@ void Robot::teleop()
   switch(controller_digital_e_t var = E_CONTROLLER_DIGITAL_A)
   {
     case E_CONTROLLER_DIGITAL_A:
-    if(Controller1.get_digital(E_CONTROLLER_DIGITAL_A))
+    if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_A))
     {
       //if(fabs(LiftObj.errorPosition) > 0.1)
-        LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) * 0.5, 0);
+      //LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) * 0.5, 0);
+      LargeRobot.LiftObj.liftAndFlip();
     }
     case E_CONTROLLER_DIGITAL_B:
     if(Controller1.get_digital(E_CONTROLLER_DIGITAL_B))
@@ -602,9 +625,9 @@ void Robot::teleop()
 
     }
     case E_CONTROLLER_DIGITAL_Y:
-    if(Controller1.get_digital(E_CONTROLLER_DIGITAL_Y))
+    if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_Y))
     {
-
+      LargeRobot.LiftObj.scoreCap();
     }
     case E_CONTROLLER_DIGITAL_L1:
     if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_L1))
