@@ -31,7 +31,7 @@
             "bin/initialize.cpp.o",
             "src\\initialize.cpp"
         ],
-        "directory": "C:\\PYRO\\GitHub\\vexu-2018-2019\\Robot_Mini",
+        "directory": "C:\\Users\\ryanbodhipaksha\\Documents\\School\\College\\VEX Robotics Competition\\VEX 2018-19 Turning Point\\PYRO Code - Turning Point\\PROS 3\\vexu-2018-2019\\Robot_Mini",
         "file": "src\\initialize.cpp"
     },
     {
@@ -66,7 +66,7 @@
             "bin/autonomous.cpp.o",
             "src\\autonomous.cpp"
         ],
-        "directory": "C:\\PYRO\\GitHub\\vexu-2018-2019\\Robot_Mini",
+        "directory": "C:\\Users\\ryanbodhipaksha\\Documents\\School\\College\\VEX Robotics Competition\\VEX 2018-19 Turning Point\\PYRO Code - Turning Point\\PROS 3\\vexu-2018-2019\\Robot_Mini",
         "file": "src\\autonomous.cpp"
     },
     {
@@ -101,7 +101,7 @@
             "bin/opcontrol.cpp.o",
             "src\\opcontrol.cpp"
         ],
-        "directory": "C:\\PYRO\\GitHub\\vexu-2018-2019\\Robot_Mini",
+        "directory": "C:\\Users\\ryanbodhipaksha\\Documents\\School\\College\\VEX Robotics Competition\\VEX 2018-19 Turning Point\\PYRO Code - Turning Point\\PROS 3\\vexu-2018-2019\\Robot_Mini",
         "file": "src\\opcontrol.cpp"
     }
 ]

@@ -16,6 +16,8 @@ pros::Motor hood(11,pros::E_MOTOR_GEARSET_18,0,MOTOR_ENCODER_ROTATIONS);
 static double currHoodPos = 54 + hood.get_position() * 14/201*360;
 static double hoodNextPos;
 static bool readyToMoveHood = false;
+static double rightBias = 1.0;
+static double leftBias = 0.95;
 
 static bool routeFinished = true;
 enum driveType
@@ -78,7 +80,7 @@ void PositionPIDTask(void* param)
     double kp;
     if(moveType == forward || moveType == reverse)
     {
-      kp = 6;
+      kp = 10;
       currentRotations = l2.get_position() * 4 * M_PI;
       errorDrivetrain = setpointPosition - currentRotations;
 
@@ -86,10 +88,10 @@ void PositionPIDTask(void* param)
 
       std::cout << "currentPos:" << currentRotations <<  " errorDrivetrain:" << errorDrivetrain << " | setSpeed: " << setSpeed << "\n";
 
-      if(setSpeed < minimumSpeed && setSpeed > 0) setSpeed = minimumSpeed;
-      if(setSpeed > -minimumSpeed && setSpeed < 0) setSpeed = -minimumSpeed;
-      if(setSpeed >=50 && i < minimumIncrementSpeedUpTime) setSpeed = i;
-      if(setSpeed <=-50 && i < minimumIncrementSpeedUpTime) setSpeed = -i;
+      if(setSpeed < minimumSpeed && setSpeed > 0) setSpeed = minimumSpeed;  //forward - overcome static friction
+      if(setSpeed > -minimumSpeed && setSpeed < 0) setSpeed = -minimumSpeed;  //backward - overcome static friction
+      if(setSpeed >=50 && i < minimumIncrementSpeedUpTime) setSpeed = i;  //forward
+      if(setSpeed <=-50 && i < minimumIncrementSpeedUpTime) setSpeed = -i;  //backward
       i+=0.5;
 
       if(fabs(errorDrivetrain) - 0.15 < 0)
@@ -99,14 +101,24 @@ void PositionPIDTask(void* param)
         //delay(500);
         routeFinished = true;
       }
-      drivetrainDriveAll(setSpeed, 0.98* setSpeed);
+      else
+      {
+        l1.move_velocity(setSpeed);
+        l2.move_velocity(setSpeed);
+        l3.move_velocity(setSpeed);
+        r1.move_velocity(setSpeed);
+        r2.move_velocity(setSpeed);
+        r3.move_velocity(setSpeed);
+      }
+      //drivetrainDriveAll(leftBias * setSpeed, rightBias * setSpeed);
+
       //l2 = setSpeed;
       //l3 = setSpeed;
       pros::delay(10);
     }
-    else
+    else    //Turning
     {
-      kp = 1.6;
+      kp = 7;//1.6;
       currentRotations = l2.get_position() * 360 * 4 / wheelBase; //FIXME
       if(moveType == rightPoint)
       {
@@ -118,6 +130,7 @@ void PositionPIDTask(void* param)
         //errorDrivetrain *= -1;
       }
       double setSpeed = kp * errorDrivetrain;
+
 
       //std::cout << "currentPos:" << currentRotations <<  " errorDrivetrain:" << errorDrivetrain << " | setSpeed: " << setSpeed << "\n";
 
@@ -135,7 +148,16 @@ void PositionPIDTask(void* param)
         //delay(500);
         routeFinished = true;
       }
-      drivetrainDriveAll(setSpeed, -setSpeed);
+      else
+      {
+        l1.move_velocity(setSpeed);
+        l2.move_velocity(setSpeed);
+        l3.move_velocity(setSpeed);
+        r1.move_velocity(-setSpeed);
+        r2.move_velocity(-setSpeed);
+        r3.move_velocity(-setSpeed);
+      }
+      //drivetrainDriveAll(setSpeed, -setSpeed);
       //l2 = setSpeed;
       //l3 = setSpeed;
       pros::delay(10);
@@ -155,134 +177,9 @@ void PositionPIDTask(void* param)
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
- void autonomousRED()
-   {
-     l1.set_brake_mode(MOTOR_BRAKE_BRAKE);
-     l2.set_brake_mode(MOTOR_BRAKE_BRAKE);
-     l3.set_brake_mode(MOTOR_BRAKE_BRAKE);
-     r1.set_brake_mode(MOTOR_BRAKE_BRAKE);
-     r2.set_brake_mode(MOTOR_BRAKE_BRAKE);
-     r3.set_brake_mode(MOTOR_BRAKE_BRAKE);
-   l2.tare_position();
-   int startTime = pros::millis();
-   pros::Task PositionPID(PositionPIDTask, NULL);
-   pros::Task HoodControl(hoodDriveToAngleTask, NULL);
-
-   //PositionPID:Task
-   //PositionPID.resume();
-   //Task LiftPID(LiftPIDTask, NULL);
-
-   int routeID = -1;
-   routeFinished = true;
-
-   while(pros::millis() - startTime < 44000)
-   {
-     pros::lcd::print(0, "SP %f", setpointPosition);
-     pros::lcd::print(1, "CurPos %f", currentRotations);
-     pros::lcd::print(2, "Error %f", errorDrivetrain);
-
-     std::cout << "SP " << setpointPosition << "\nCurPos " << currentRotations << "\nError " << errorDrivetrain <<"\n";
-
-     if(routeFinished == true)
-     {
-       if(routeID>=0) pros::delay(1000);
-       routeID++;
-       l2.tare_position();
 
 
-
-       switch (routeID)
-       {
-         case 0:
-           //std::cout << "START R0 - DF:C1, BI:1\n";
-           moveType = forward;
-           setpointPosition = 46;
-           intake = 127;
-           preflywheel = -127;
-           break;
-         case 1:
-           //std::cout << "START R1 - DR:24, BI:0\n";
-           moveType = reverse;
-           setpointPosition = -36;
-           intake = 0;
-           preflywheel = 0;
-           break;
-         case 2:
-           //std::cout << "START R2\n";
-           moveType = leftPoint;
-           setpointPosition = 108;
-           break;
-         case 3:
-         //setpointPosition = 0;
-         //currentRotations = 0;
-         //errorDrivetrain = 0;
-         intake = -127;
-         preflywheel = -127;
-         pros::delay(100);
-
-         intake = 0;
-         preflywheel = 0;
-
-           //setHoodAngle
-           hood.move_relative(-0.72, 80);
-           pros::delay(4000);
-           flywheelf.move_velocity(600);
-           flywheelr.move_velocity(600);
-           //while(flywheelf.get_actual_velocity()<500)
-           //{
-             pros::delay(5000);
-           //}
-           intake = 127;
-           preflywheel = 127;
-           pros::delay(200); //FIXME SHOOTING 1st Ball NOW
-           intake = 0;
-           preflywheel = 0;
-           //setHoodAngle
-           hood.move_relative(-0.54, 80);
-           pros::delay(4000);
-           //while(flywheelf.get_actual_velocity()<500)
-           //{
-             pros::delay(5000);
-           //}
-           intake = 127;
-           preflywheel = 127;
-           pros::delay(1000); //FIXME SHOOTING 2nd Ball NOW
-           intake = 0;
-           preflywheel = 0;
-           flywheelr = 0;
-           flywheelf = 0;
-           moveType = leftPoint;
-           setpointPosition = 5;
-           break;
-         case 4:
-           moveType = forward;
-           setpointPosition = 52;
-           break;
-         case 5:
-           moveType = reverse;
-           setpointPosition = -66;
-
-           break;
-         default:
-           drivetrainDriveAll(0, 0);
-           setpointPosition = 0;
-           currentRotations = 0;
-           errorDrivetrain = 0;
-           //PositionPID.suspend();
-           break;
-       }
-       routeFinished = false;
-       pros::delay(10);
-     }
-   }
-   std::cout << "AUTONOMOUS OVER!\n";
-   //LargeRobot.eStop();
-
-   drivetrainDriveAll(0, 0);
-   disabled();
- }
-
- void autonomousBLUEFINAL()
+ void autonomous() // BLUE FINAL
  {
    l1.set_brake_mode(MOTOR_BRAKE_BRAKE);
    l2.set_brake_mode(MOTOR_BRAKE_BRAKE);
@@ -332,11 +229,11 @@ void PositionPIDTask(void* param)
          PositionPID.suspend();
 
          drivetrainDriveAll(30, 30);
-         pros::delay(900);
+         pros::delay(300);
 
          PositionPID.resume();
          moveType = reverse;
-         setpointPosition = -42;
+         setpointPosition = -40;
 
          break;
        case 2:
@@ -344,7 +241,7 @@ void PositionPIDTask(void* param)
          intake = 0;
          preflywheel = 0;
          moveType = rightPoint;
-         setpointPosition = 96;
+         setpointPosition = 95;
          //setHoodAngle
 
          break;
@@ -440,6 +337,8 @@ void PositionPIDTask(void* param)
      routeFinished = false;
      pros::delay(10);
    }
+   PositionPID.suspend();
+   HoodControl.suspend();
  }
  std::cout << "AUTONOMOUS OVER!\n";
  //LargeRobot.eStop();
@@ -448,7 +347,7 @@ void PositionPIDTask(void* param)
  disabled();
 }
 
-void autonomous()//REDFINAL
+void autonomousRED()//REDFINAL
 {
   l1.set_brake_mode(MOTOR_BRAKE_BRAKE);
   l2.set_brake_mode(MOTOR_BRAKE_BRAKE);
@@ -510,7 +409,7 @@ while(pros::millis() - startTime < 44000)
         intake = 0;
         preflywheel = 0;
         moveType = leftPoint;
-        setpointPosition = 96;
+        setpointPosition = 102;
         //setHoodAngle
 
         break;
@@ -521,7 +420,7 @@ while(pros::millis() - startTime < 44000)
 
       //pros::delay(100);
 
-      hood.move_relative(-0.72, 80);
+      hood.move_relative(-0.74, 80);
       intake = -127;
       preflywheel = -127;
       pros::delay(20);
@@ -556,7 +455,7 @@ while(pros::millis() - startTime < 44000)
         flywheelr = 0;
         flywheelf = 0;
         moveType = leftPoint;
-        setpointPosition = 10;
+        setpointPosition = 5;
         break;
       case 4:
         moveType = forward;
@@ -592,6 +491,173 @@ while(pros::millis() - startTime < 44000)
        PositionPID.resume();
         moveType = forward;
         setpointPosition = 43;
+        break;
+      default:
+        drivetrainDriveAll(0, 0);
+        setpointPosition = 0;
+        currentRotations = 0;
+        errorDrivetrain = 0;
+        intake = 0;
+        preflywheel = 0;
+        //PositionPID.suspend();
+        break;
+    }
+    routeFinished = false;
+    pros::delay(10);
+  }
+}
+std::cout << "AUTONOMOUS OVER!\n";
+//LargeRobot.eStop();
+
+drivetrainDriveAll(0, 0);
+disabled();
+}
+
+
+void autonomousS()//REDFINAL
+{
+  l1.set_brake_mode(MOTOR_BRAKE_BRAKE);
+  l2.set_brake_mode(MOTOR_BRAKE_BRAKE);
+  l3.set_brake_mode(MOTOR_BRAKE_BRAKE);
+  r1.set_brake_mode(MOTOR_BRAKE_BRAKE);
+  r2.set_brake_mode(MOTOR_BRAKE_BRAKE);
+  r3.set_brake_mode(MOTOR_BRAKE_BRAKE);
+l2.tare_position();
+int startTime = pros::millis();
+pros::Task PositionPID(PositionPIDTask, NULL);
+pros::Task HoodControl(hoodDriveToAngleTask, NULL);
+
+//PositionPID:Task
+//PositionPID.resume();
+//Task LiftPID(LiftPIDTask, NULL);
+
+int routeID = -1;
+routeFinished = true;
+
+while(pros::millis() - startTime < 44000)
+{
+  pros::lcd::print(0, "SP %f", setpointPosition);
+  pros::lcd::print(1, "CurPos %f", currentRotations);
+  pros::lcd::print(2, "Error %f", errorDrivetrain);
+
+  std::cout << "SP " << setpointPosition << "\nCurPos " << currentRotations << "\nError " << errorDrivetrain <<"\n";
+
+  if(routeFinished == true)
+  {
+    if(routeID>=0) pros::delay(1000);
+    routeID++;
+    l2.tare_position();
+
+
+
+    switch (routeID)
+    {
+      case 0:
+        //std::cout << "START R0 - DF:C1, BI:1\n";
+        moveType = forward;
+        setpointPosition = 48;
+        intake = 127;
+        preflywheel = -127;
+        break;
+      case 1:
+        //std::cout << "START R1 - DR:24, BI:0\n";
+        PositionPID.suspend();
+
+        drivetrainDriveAll(30, 30);
+        pros::delay(900);
+
+        PositionPID.resume();
+        moveType = reverse;
+        setpointPosition = -42;
+
+        break;
+      case 2:
+        //std::cout << "START R2\n";
+        intake = 0;
+        preflywheel = 0;
+        moveType = leftPoint;
+        setpointPosition = 92;
+        //setHoodAngle
+
+        break;
+      case 3:
+      //setpointPosition = 0;
+      //currentRotations = 0;
+      //errorDrivetrain = 0;
+
+      //pros::delay(100);
+
+      hood.move_relative(-0.74, 80);
+      intake = -127;
+      preflywheel = -127;
+      pros::delay(20);
+      intake = 0;
+      preflywheel = 0;
+
+      flywheelf.move_velocity(600);
+      flywheelr.move_velocity(600);
+
+
+        //while(flywheelf.get_actual_velocity()<500)
+        //{
+          pros::delay(5000);
+        //}
+        intake = 127;
+        preflywheel = 127;
+        pros::delay(200); //FIXME SHOOTING 1st Ball NOW
+        intake = 0;
+        preflywheel = 0;
+        //setHoodAngle
+        hood.move_relative(-0.54, 80);
+        //pros::delay(4000);
+        //while(flywheelf.get_actual_velocity()<500)
+        //{
+          pros::delay(2000);
+        //}
+        intake = 127;//
+        preflywheel = 127;
+        pros::delay(500); //FIXME SHOOTING 2nd Ball NOW
+        intake = 80;
+        preflywheel = -80;
+        flywheelr = 0;
+        flywheelf = 0;
+        moveType = leftPoint;
+        setpointPosition = 5;
+        break;
+      case 4:
+        moveType = forward;
+        setpointPosition = 52;
+        break;
+      case 5:
+        moveType = reverse;
+        setpointPosition = -77;
+
+        break;
+      case 6:
+        moveType = rightPoint;
+        setpointPosition = 110;
+        break;
+
+      case 7:
+        //moveType = forward;
+        //setpointPosition = 14;
+        PositionPID.suspend();
+
+        drivetrainDriveAll(40, 40);
+        pros::delay(1500);
+        drivetrainDriveAll(0, 0);
+        routeID++;
+        case 8:
+          //moveType = forward;
+          //setpointPosition = -14;
+          drivetrainDriveAll(-40, -40);
+          pros::delay(1000);
+          routeID++;
+          routeFinished = true;
+      case 9:
+       PositionPID.resume();
+        moveType = forward;
+        setpointPosition = 50;// + (40 * skillsRun);
         break;
       default:
         drivetrainDriveAll(0, 0);
