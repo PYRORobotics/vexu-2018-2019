@@ -367,7 +367,7 @@ void UpdateTelemetryTaskAUTO(void* param)
  */
  void autonomous()
  {
-   if(selectedAutoMode == red1 || selectedAutoMode == blue1)  //FIXME
+   //if(selectedAutoMode == red1 || selectedAutoMode == blue1)  //FIXME
    {
      M_Drivetrain_LF.tare_position();
      int startTime = millis();
@@ -404,8 +404,8 @@ void UpdateTelemetryTaskAUTO(void* param)
            case 2:
             LargeRobot.runIntake(0, mainIntake);
             LargeRobot.eStop();
-            break;
-           default:
+            //break;
+           //case 3:
              PositionPID.suspend();
              break;
          }

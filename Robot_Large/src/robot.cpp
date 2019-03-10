@@ -513,17 +513,23 @@ void Robot::resetPosition()
 
 //void Robot::teleop(Controller C0 = Controller0, Controller C1 = Controller1)
 
+
 void Robot::teleop()
 {
+  bool runIntake = false;
+  bool reverseIntake = false;
+  bool shootBall = false;
+
 //  DrivetrainObj.tankDrive(Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_Y),
 //                          Controller0.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y));
 
   DrivetrainObj.arcadeDrive(Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_X),
                           Controller0.get_analog(E_CONTROLLER_ANALOG_LEFT_Y));
 
-  LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y));
-  M_Flywheel_Turret = Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_X); // FIXME
-  M_Flywheel_Hood = Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) / 2;
+  LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y));
+  M_Flywheel_Turret = -Controller1.get_analog(E_CONTROLLER_ANALOG_RIGHT_X); // FIXME
+  //M_Flywheel_R = Controller1.get_analog(E_CONTROLLER_ANALOG_RIGHT_X); // FIXME
+  M_Flywheel_Hood = Controller1.get_analog(E_CONTROLLER_ANALOG_RIGHT_Y) / 2;
 
 
 
@@ -558,6 +564,8 @@ void Robot::teleop()
       if(Controller0.get_digital(E_CONTROLLER_DIGITAL_X))
       {
         contValues[2] = "X";
+        M_Intake_Main = 0;
+        M_Intake_Preflywheel = 0;
       }
     case E_CONTROLLER_DIGITAL_Y:
       if(Controller0.get_digital(E_CONTROLLER_DIGITAL_Y))
@@ -589,33 +597,27 @@ void Robot::teleop()
         LargeRobot.LiftObj.liftAndFlip();
       }
     case E_CONTROLLER_DIGITAL_R1:
-    if(Controller0.get_digital(E_CONTROLLER_DIGITAL_R1))
+    if(Controller0.get_digital_new_press(E_CONTROLLER_DIGITAL_R1))
     {
       contValues[6] = "R1";
-      M_Intake_Main = 127;
-      M_Intake_Preflywheel = -127;
+      runIntake = true;
     }
-    else
-    {
-      M_Intake_Main = 0;
-      M_Intake_Preflywheel = 0;
-    }
-    case E_CONTROLLER_DIGITAL_R2:
-      if(Controller0.get_digital_new_press(E_CONTROLLER_DIGITAL_R2))
+    //else
+    //{
+    //  runIntake = false;
+    //}
+
+    else  if(Controller0.get_digital(E_CONTROLLER_DIGITAL_R2))
       {
-        M_Intake_Main = -80;
-        M_Intake_Preflywheel = -80;
-      }
-      else if(Controller1.get_digital(E_CONTROLLER_DIGITAL_A))
-      {
-        M_Intake_Main = 127;
-        M_Intake_Preflywheel = 127;
+        runIntake = true;
+        reverseIntake = true;
       }
       else
       {
-        M_Intake_Main = 0;
-        M_Intake_Preflywheel = 0;
+        if(!Controller0.get_digital(E_CONTROLLER_DIGITAL_R1)||!Controller0.get_digital(E_CONTROLLER_DIGITAL_R2))
+        runIntake = false;
       }
+      case E_CONTROLLER_DIGITAL_R2:
     case E_CONTROLLER_DIGITAL_UP:
       if(Controller0.get_digital(E_CONTROLLER_DIGITAL_UP))
       {
@@ -644,11 +646,26 @@ void Robot::teleop()
     //
   switch(controller_digital_e_t var = E_CONTROLLER_DIGITAL_A)
   {
+    case E_CONTROLLER_DIGITAL_X:
+    if(Controller1.get_digital(E_CONTROLLER_DIGITAL_X))
+    {
+      //M_Flywheel_F = -127;
+      //M_Flywheel_F = -127;
+      M_Intake_Main = -80;
+      M_Intake_Preflywheel = -80;
+    }
+    else
+    {
+      //M_Flywheel_F = 0;
+      //M_Flywheel_F = 0;
+    }
     case E_CONTROLLER_DIGITAL_A:
-    if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_A))
+    if(Controller1.get_digital(E_CONTROLLER_DIGITAL_A))
     {
       //if(fabs(LiftObj.errorPosition) > 0.1)
       //LiftObj.run(Controller1.get_analog(E_CONTROLLER_ANALOG_LEFT_Y) * 0.5, 0);
+      M_Intake_Main = 127;
+      M_Intake_Preflywheel = 127;
       TurretObj.run(500);
     }
     case E_CONTROLLER_DIGITAL_B:
@@ -656,11 +673,7 @@ void Robot::teleop()
     {
       TurretObj.run(0);
     }
-    case E_CONTROLLER_DIGITAL_X:
-    if(Controller1.get_digital(E_CONTROLLER_DIGITAL_X))
-    {
 
-    }
     case E_CONTROLLER_DIGITAL_Y:
     if(Controller1.get_digital_new_press(E_CONTROLLER_DIGITAL_Y))
     {
@@ -768,6 +781,26 @@ void Robot::teleop()
     }
     break;
   }
+
+  if(shootBall)	// (4)
+  {
+    M_Intake_Main = 80;
+    M_Intake_Preflywheel = 80;
+  }
+  else if(runIntake)
+  {
+    if(!reverseIntake)	// (1)
+    {
+      M_Intake_Main = 80;
+      M_Intake_Preflywheel = -80;
+    }
+    else	// (2)
+    {
+      M_Intake_Main = -80;
+      M_Intake_Preflywheel = -80;
+    }
+  }
+
 
   //IntakeObj.run(intakeSpeed, mainIntake);
   //M_Intake_Main = intakeSpeed;
@@ -1193,7 +1226,7 @@ bool driveIsReversed = false;
 Motor M_Drivetrain_LF(16,E_MOTOR_GEARSET_18,driveIsReversed,E_MOTOR_ENCODER_ROTATIONS);
 
 /* Left-middle Drivetrain Motor */
-Motor M_Drivetrain_LM(17,E_MOTOR_GEARSET_18,driveIsReversed,E_MOTOR_ENCODER_ROTATIONS);
+Motor M_Drivetrain_LM(15,E_MOTOR_GEARSET_18,driveIsReversed,E_MOTOR_ENCODER_ROTATIONS);
 
 /* Left-rear Drivetrain Motor */
 Motor M_Drivetrain_LR(18,E_MOTOR_GEARSET_18,driveIsReversed,E_MOTOR_ENCODER_ROTATIONS);
@@ -1218,7 +1251,7 @@ bool intakeIsReversed = true;
 Motor M_Intake_Main(11,E_MOTOR_GEARSET_06,intakeIsReversed,E_MOTOR_ENCODER_ROTATIONS);
 
 /* Pre-flywheel Intake Motor */
-Motor M_Intake_Preflywheel(1,E_MOTOR_GEARSET_06,intakeIsReversed,E_MOTOR_ENCODER_ROTATIONS);
+Motor M_Intake_Preflywheel(2,E_MOTOR_GEARSET_06,intakeIsReversed,E_MOTOR_ENCODER_ROTATIONS);
 
 /*
  * Flywheel (Shooter) Motors (M_Flywheel)

@@ -370,28 +370,29 @@ void opcontrol()
 
   resetPosAutoREDTOP();
   //Task FlywheelUpdate(FlywheelUpdateTask, NULL);
-  Task serial(SerialTask,NULL);
+  //Task serial(SerialTask,NULL);
   Task UpdateTelemetry(UpdateTelemetryTask, NULL);
-  Task doLiftAndFlipTask(liftAndFlipVoidTask, NULL);
+  //Task doLiftAndFlipTask(liftAndFlipVoidTask, NULL);
 
 
   while(1)
   {
-    screeni=0;
+    //screeni=0;
+    //printSerial();
     LargeRobot.teleop();
-    ptr = &arr;
-    sprintf(arr, "%d %d", Controller0.get_analog(ANALOG_LEFT_X), Controller0.get_analog(ANALOG_LEFT_Y));
+    //ptr = &arr;
+    //sprintf(arr, "%d %d", Controller0.get_analog(ANALOG_LEFT_X), Controller0.get_analog(ANALOG_LEFT_Y));
 
-    lv_label_set_text(page_text_IMUData, *ptr);
+    //lv_label_set_text(page_text_IMUData, *ptr);
 
-    if(pros::competition::is_connected())
-    {
-      lv_label_set_text(page_main_headerTeleopMode, "Connected to Field");
-      lv_obj_set_style(page_main_headerTeleopMode, &style_font_blackplain);                    /*Set the created style*/
-    }
+    //if(pros::competition::is_connected())
+    //{
+      //lv_label_set_text(page_main_headerTeleopMode, "Connected to Field");
+      //lv_obj_set_style(page_main_headerTeleopMode, &style_font_blackplain);                    /*Set the created style*/
+    //}
 
 
-    screeni++;
+    //screeni++;
     //M_Flywheel_F = Controller0.get_analog(ANALOG_LEFT_Y);
     //M_Flywheel_R = Controller0.get_analog(ANALOG_LEFT_Y);
     //serialRead(NULL);

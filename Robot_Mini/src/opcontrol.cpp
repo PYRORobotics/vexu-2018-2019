@@ -17,6 +17,7 @@ using namespace pros;
  */
 void opcontrol() {
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
+	pros::Controller partner(pros::E_CONTROLLER_PARTNER);
 	pros::Motor l1(1,pros::E_MOTOR_GEARSET_06);
 	pros::Motor l2(2,pros::E_MOTOR_GEARSET_06,1);
 	pros::Motor l3(3,pros::E_MOTOR_GEARSET_06);
@@ -35,29 +36,61 @@ void opcontrol() {
   r1.set_brake_mode(MOTOR_BRAKE_COAST);
   r2.set_brake_mode(MOTOR_BRAKE_COAST);
   r3.set_brake_mode(MOTOR_BRAKE_COAST);
-
+	intake.set_brake_mode(MOTOR_BRAKE_BRAKE);
+	preflywheel.set_brake_mode(MOTOR_BRAKE_BRAKE);
 	arm.set_brake_mode(MOTOR_BRAKE_HOLD);
 
+	static int actionShootSequence = 0;	//0 = off
+	static double preflyPosInit = 0;
+	static double preflyPosSet = 0;
+	static int intakeSignal = 0;
+	static int preflywheelSignal = 0;
+	static double hoodAngleHigh = 34;
+	static double hoodAngleMid = 23;
+	static double hoodAngleCurr = 34;
+
+	static int armSignal = 0;
 	static int armMode = 0;
-	static bool runIntake = false;
-	//static bool reverseIntake = false;
-	//static bool shootBall = false;
-	static int shiftIntake = 0; //0 = neither (do whatever toggle position runIntake says to do), 1 = reverse intake, 2 = shoot balls
-	static bool runFlywheel = false;
-	static bool reverseFlywheel = false;
-	const double armHighPresetAngle = 200;
-	const double armGroundPresetAngle = 260;
+	const double armHighPresetAngle = -200;
+	const double armGroundPresetAngle = -245;
 	static int armPresetTolerance = 2;
 	static double armPresetKP = 2.0;
-//	const double armStartAngle = 0;	//FIXME
-//	const double armEndAngle = 120;	//FIXME
-	static double hoodAngleSetpoint = 0;
-	static double hoodAngleCurr = 0;
+	static int armPresetIterationCurr = 0;
+	static int armPresetIterationEnd = 100;
+	//const double armStartAngle = 0;	//FIXME
+	//const double armEndAngle = 120;	//FIXME
+	//static bool runIntake = false;
+	//static bool reverseIntake = false;
+	//static bool shootBall = false;
+	//static int shiftIntake = 0; //0 = neither (do whatever toggle position runIntake says to do), 1 = reverse intake, 2 = shoot balls
+	static bool runFlywheel = false;
+	static bool reverseFlywheel = false;
+	//static double hoodAngleSetpoint = 0;
+	//static double hoodAngleCurr = 0;
 
 
 
 	while(1)
 	{
+		// Spline controller motor curve coefficients:
+		double speedL = master.get_analog(ANALOG_LEFT_Y);
+		double speedR = master.get_analog(ANALOG_RIGHT_Y);
+	  double a = 0.50703533709;
+	  double b = 0.00004992507;
+	  double c = 7.44251597e-9;
+	  double d = 1.5203616e-13;
+	  int motorCurveL = a * speedL - b * speedL*speedL*speedL + c * speedL*speedL*speedL*speedL*speedL - d * speedL*speedL*speedL*speedL*speedL*speedL*speedL;
+	  int motorCurveR = a * speedR - b * speedR*speedR*speedR + c * speedR*speedR*speedR*speedR*speedR - d * speedR*speedR*speedR*speedR*speedR*speedR*speedR;
+
+		l1 = motorCurveL;
+	  l2 = motorCurveL;
+	  l3 = motorCurveL;
+	  r1 = motorCurveR;
+	  r2 = motorCurveR;
+	  r3 = motorCurveR;
+
+		/*
+		//ARCADE DRIVE
 		int x = master.get_analog(ANALOG_LEFT_X);
 		int y = master.get_analog(ANALOG_LEFT_Y);
 
@@ -86,13 +119,214 @@ void opcontrol() {
 	  l3 = L;
 	  r1 = R;
 	  r2 = R;
-	  r3 = R;
+	  r3 = R;*/
 
+		//BALL INTAKE CONTROL
+		if (master.get_digital(DIGITAL_R1))	// Collect balls (hold)
+		{
+			// Forward intake, Backwards preflywheel
+			intakeSignal = 120;
+			preflywheelSignal = -120;
+			actionShootSequence = 0;
+		}
+		else if (master.get_digital(DIGITAL_L1))
+		{
+			// Backwards intake, Backwards preflywheel
+			intakeSignal = -120;
+			preflywheelSignal = -120;
+			actionShootSequence = 0;
+		}
+		else if (actionShootSequence == 0)
+		{
+			intakeSignal = 0;
+			preflywheelSignal = 0;
+		}
+
+		if (master.get_digital_new_press(DIGITAL_R2))	// Shoot ball auto sequence activation
+		{
+			if (actionShootSequence == 0)
+			{
+				actionShootSequence = 1;
+			}
+			else
+			{
+				actionShootSequence = 0;
+			}
+		}
+
+		if (actionShootSequence != 0)			// Shoot ball auto sequence
+		{
+			if (actionShootSequence == 1)
+			{
+				//read current preflywheel encoder value. preflywheel ratio = 3:1. assign preflywheel forward signal
+				preflyPosInit = preflywheel.get_position();
+				preflyPosSet = preflyPosInit + 1;
+				preflywheelSignal = 120;
+				actionShootSequence = 2;
+			}
+			else if (actionShootSequence == 2)
+			{
+				//turn preflywheel a certain amount of rotations
+				if (preflywheel.get_position() >= preflyPosSet)	// if preflywheel has finished turning a certain amount of rotations move on to the next task
+				{
+					if (hoodAngleCurr == hoodAngleMid)
+					{
+						hoodAngleCurr = hoodAngleHigh;
+					}
+					else if (hoodAngleCurr == hoodAngleHigh)
+					{
+						hoodAngleCurr = hoodAngleMid;
+					}
+					preflyPosInit = preflywheel.get_position();
+					preflyPosSet = preflyPosInit - 1;
+					actionShootSequence = 3;
+				}
+			}
+			else if (actionShootSequence == 3)
+			{
+				//intake is collecting balls and won't stop until time is reached
+				intakeSignal = 120;
+				preflywheelSignal = -120;
+				if (preflywheel.get_position() <= preflyPosSet)
+				{
+					intakeSignal = 0;
+					preflywheelSignal = 0;
+					actionShootSequence = 0;
+				}
+			}
+		}
+
+		intake = intakeSignal;
+		preflywheel = preflywheelSignal;
+
+		//HOOD CONTROL
+		if (partner.get_digital(DIGITAL_UP))
+		{
+			hoodAngleCurr = hoodAngleHigh;
+		}
+		else if (partner.get_digital(DIGITAL_DOWN))
+		{
+			hoodAngleCurr = hoodAngleMid;
+		}
+		hood.move_absolute((-1)*(54-hoodAngleCurr)*201/14/360,120);
+
+		//SHOOTER CONTROL
+		if(partner.get_digital(DIGITAL_R1))	// PRESS A to turn flywheel ON
+		{
+			runFlywheel = 1;
+		}
+		else if(partner.get_digital(DIGITAL_R2))	// PRESS B to turn flywheel ON
+		{
+			runFlywheel = 0;
+		}
+		if(partner.get_digital(DIGITAL_X))	// PRESS X (hold) to reverse direction of flywheel
+		{
+			reverseFlywheel = true;	//Reverse only if it is safe to reverse the flywheel, and it will do so as long as the button is being held
+		}
+		else
+		{
+			reverseFlywheel = false;
+		}
+
+		if(runFlywheel)	//Shooter logic
+		{
+			flywheelf.move_velocity(600);
+			flywheelr.move_velocity(600);
+		}
+		else
+		{
+			if(reverseFlywheel)
+			{
+				flywheelf.move_velocity(0);
+				flywheelr.move_velocity(0);
+				flywheelf = -80;
+				flywheelr = -80;
+			}
+			else
+			{
+				flywheelf.move_velocity(0);
+				flywheelr.move_velocity(0);
+				flywheelf = 0;
+				flywheelr = 0;
+			}
+		}
+
+		//ARM (DONGER) CONTROL
+		pros::lcd::print(0, "Arm Position = %f\n", arm.get_position());
+
+		armSignal = partner.get_analog(ANALOG_LEFT_Y);
+		if (arm.get_position() > armHighPresetAngle && armSignal > 0 && !partner.get_digital(DIGITAL_L1))
+		{
+			armSignal = 0;
+		}
+		if ((partner.get_analog(ANALOG_LEFT_Y)>0 && arm.get_position()>-10) || (partner.get_analog(ANALOG_LEFT_Y)<0 && arm.get_position()<armGroundPresetAngle))
+		{
+			armSignal = 0;	//Set limits
+		}
+
+		/*
+		//Define armMode
+		if (abs(partner.get_analog(ANALOG_LEFT_Y)) > 2)	//No preset in action
+		{
+			armMode = 0;
+		}
+		else if (partner.get_digital_new_press(DIGITAL_L2))	//Ground preset
+		{
+			armPresetIterationCurr = 0;
+			armMode = 1;
+		}
+		else if (partner.get_digital_new_press(DIGITAL_L1))	//High preset
+		{
+			armPresetIterationCurr = 0;
+			armMode = 2;
+		}
+
+		//Execute armMode
+		if (armMode == 2)	//armMode = 2
+		{
+			if (abs(arm.get_position() - armHighPresetAngle) > armPresetTolerance && armPresetIterationCurr < armPresetIterationEnd)
+			{
+				armSignal = abs(armHighPresetAngle - arm.get_position())/(armHighPresetAngle - arm.get_position()) * 120;
+				armPresetIterationCurr++;
+			}
+			else
+			{
+				armMode = 0;
+			}
+		}
+		else if (armMode == 1) //armMode = 1
+		{
+			if (abs(arm.get_position() - armHighPresetAngle) > armPresetTolerance && armPresetIterationCurr < armPresetIterationEnd)
+			{
+				armSignal = (armGroundPresetAngle - arm.get_position()) * armPresetKP;
+				armPresetIterationCurr++;
+			}
+			else
+			{
+				armMode = 0;
+			}
+		}
+		else	//armMode = 0
+		{
+			if ((partner.get_analog(ANALOG_LEFT_Y)>0 && arm.get_position()>-10) || (partner.get_analog(ANALOG_LEFT_Y)<0 && arm.get_position()<-255))
+			{
+				armSignal = 0;	//Set limits
+			}
+			else
+			{
+				armSignal = partner.get_analog(ANALOG_LEFT_Y);
+			}
+		}*/
+
+		arm = armSignal;
+
+		/*
 		// Just below horizontal position = 200
 		// Ground hardstop = 245
 
 		pros::lcd::print(1, "%f\n", arm.get_position());
 		//std::cout<<master.get_analog(ANALOG_RIGHT_Y)<<" degrees\n";
+
 
 		//Define armMode
 		if (abs(master.get_analog(ANALOG_RIGHT_Y)) > 2)	//No preset in action
@@ -123,14 +357,6 @@ void opcontrol() {
 		else if (armMode == 1) //armMode = 1
 		{
 			arm = (armGroundPresetAngle - arm.get_position()) * armPresetKP;
-			/*if (abs(arm.get_position() - armGroundPresetAngle) > armPresetTolerance)
-			{
-				arm = (armGroundPresetAngle - arm.get_position()) * armPresetKP;
-			}
-			else
-			{
-				armMode = 0;
-			}*/
 		}
 		else	//armMode = 0
 		{
@@ -161,39 +387,17 @@ void opcontrol() {
 		pros::lcd::print(6, "Hood motor signal = %f\n", hood);
 
 		hoodAngleCurr = (-1)*hood.get_position()* 14/201*360;
-		/*if ((hoodAngleSetpoint - hoodAngleCurr) < 0)
-		{
-			hood = 40;
-		}
-		if ((hoodAngleSetpoint - hoodAngleCurr) > 0)
-		{
-			hood = -40;
-		}
-		else
-		{
-			hood = 0;
-		}*/
-		hood = abs(hoodAngleSetpoint - hoodAngleCurr)/(hoodAngleSetpoint - hoodAngleCurr) * (-30);
-		/*if (1)//(abs(hood.get_position() - ) > 1)
-		{
-			if (abs(hood.get_position() - hoodAngleSetpoint) > 1)
-			{
-				hood = abs(hoodAngleSetpoint - hood.get_position())/(hoodAngleSetpoint - hood.get_position()) * 127;
-			}
-			else
-			{
-				hood = 0;
-			}
-		}
-		else
-		{
-			hood = 0;
-		}*/
 
-		//SHOOTER USER INPUT
-		if(master.get_digital_new_press(DIGITAL_A))	// PRESS A (toggle) to spin up flywheel
+		hood = abs(hoodAngleSetpoint - hoodAngleCurr)/(hoodAngleSetpoint - hoodAngleCurr) * (-30);
+
+		//SHOOTER CONTROL
+		if(master.get_digital(DIGITAL_A))	// PRESS A (toggle) to spin up flywheel
 		{
-			runFlywheel = !runFlywheel;
+			runFlywheel = 1;
+		}
+		else if(master.get_digital(DIGITAL_B))
+		{
+			runFlywheel = 0;
 		}
 		if(master.get_digital(DIGITAL_B))	// PRESS B (toggle) to reverse direction of flywheel
 		{
@@ -203,18 +407,9 @@ void opcontrol() {
 		{
 			reverseFlywheel = false;
 		}
-		//INTAKE USER INPUT
-		/*if(master.get_digital(DIGITAL_B))	// HOLD B to shoot ball
-		{
-			pros::delay(10);
-			if(master.get_digital(DIGITAL_B))	// Check if still holding
-			shootBall = true;
-		}
-		else
-		{
-			shootBall = false;
-		}*/
 
+
+		//INTAKE USER INPUT
 		if(master.get_digital_new_press(DIGITAL_X))	// PRESS X (toggle) to continuously collect balls
 		{
 			runIntake = !runIntake;
@@ -232,18 +427,10 @@ void opcontrol() {
 		{
 			shiftIntake = 0;
 		}
-		/*if(master.get_digital(DIGITAL_R2))	// HOLD R2 to reverse intake
-		{
-			if(!runIntake) runIntake = true;
-			reverseIntake = true;
-		}
-		else
-		{
-			runIntake = false;
-			reverseIntake = false;
-		}*/
 
+		*/
 		//-------------------------------------------------------------------------
+		/*
 		// FLYWHEEL LOGIC
 		if(runFlywheel)	// (3)
 		{
@@ -290,7 +477,7 @@ void opcontrol() {
 				intake = 0;
 				preflywheel = 0;
 			}
-		}
+		}*/
 		/*if(shootBall)	// (4)
 		{
 			intake = 127;

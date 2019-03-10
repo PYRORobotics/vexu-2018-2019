@@ -29,11 +29,11 @@ void serialRead(void* a)
 {
   char serialCharArray [100] = {0};
 
-  pros::lcd::print(1, "Before fopen");
+  //pros::lcd::print(1, "Before fopen");
 
   serialPort = fopen("/ser/sin", "r" );	// Opens serialPort Filestream as serial read
 
-  pros::lcd::print(2, "After fopen");
+  //pros::lcd::print(2, "After fopen");
 
   if (serialPort == NULL)             	// Could not open serial stream
   {
@@ -41,7 +41,7 @@ void serialRead(void* a)
   }
 	else
   {
-    pros::lcd::print(3, "Serial Stream Opened");
+    //pros::lcd::print(3, "Serial Stream Opened");
 
     fgets(serialCharArray, 100, serialPort);
 

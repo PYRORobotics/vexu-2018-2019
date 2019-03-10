@@ -34,11 +34,7 @@ void initialize()
 {
 	//Task ReadSerial(SerialReadTask, NULL);
 	//Task UpdateTelemetry(UpdateTelemetryTask, NULL);
-  Screen_Init_SetStlyes();
-  lv_obj_t * scr = lv_obj_create(NULL, NULL);
-  lv_scr_load(scr);                                   /*Load the screen*/
-  Screen_Background_Init();
-  Screen_Title_Title();
+  pros::lcd::initialize();
 
 	M_Drivetrain_LF.set_brake_mode(MOTOR_BRAKE_HOLD);
 	M_Drivetrain_LM.set_brake_mode(MOTOR_BRAKE_HOLD);
@@ -94,7 +90,7 @@ void disabled()
  */
 void competition_initialize()
 {
-  LargeRobot.initializePreMatch();
+  //LargeRobot.initializePreMatch();
 	// Light LEDs to Show Initialize Connected Properly
 	// Auto Select
 }
