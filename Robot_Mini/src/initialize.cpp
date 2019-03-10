@@ -1,4 +1,4 @@
-#include "../include/main.h"
+#include "main.h"
 
 void on_center_button() {
 	static bool pressed = false;
@@ -23,15 +23,12 @@ void initialize() {
 	pros::lcd::register_btn1_cb(on_center_button);
 }
 
-//extern pros::Task PositionPID;
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {
-	//PositionPID.suspend();
-}
+void disabled() {}
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
