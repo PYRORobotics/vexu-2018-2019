@@ -118,8 +118,9 @@ void lv_draw_label(const lv_area_t *cords_p, const lv_area_t *mask_p,
  * @param map_p pointer to a lv_color_t array which contains the pixels of the
  * image
  */
+ /*
 void lv_draw_img(const lv_area_t *coords, const lv_area_t *mask,
-                 const lv_style_t *style, const void *src);
+                 const lv_style_t *style, const void *src);*/
 #endif
 
 /**
