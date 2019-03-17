@@ -1,18 +1,35 @@
 #include "../include/main.h"
 
-using namespace okapi;
+//using namespace okapi;
 
-const auto WHEEL_DIAMETER = 3.6_in;
-const auto CHASSIS_WIDTH = 14.5_in;
+okapi::QLength WHEEL_DIAMETER = 4_in;//3.6_in;
+okapi::QLength CHASSIS_WIDTH = 12_in;
+okapi::MotorGroup MG_Drivetrain_Left = {6};
+okapi::MotorGroup MG_Drivetrain_Right = {6};
+
+
+okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
+
 
 auto chassis = ChassisControllerFactory::create(
-  {16,15,18}, {-6,-7,-8},
-  IterativePosPIDController::Gains{0.0008, 0.00005, 0.00005},
-  IterativePosPIDController::Gains{0.00003, 0.00003, 0.00001},
-  IterativePosPIDController::Gains{0.0006, 0.00008, 0.00008},
-  AbstractMotor::gearset::green,
-  {WHEEL_DIAMETER, CHASSIS_WIDTH}
-);
+   //{16,15,18}, {-6,-7,-8},
+   MG_Drivetrain_Left, MG_Drivetrain_Right,
+   //IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
+   //IterativePosPIDController::Gains{0.00003, 0.00003, 0.00001},
+   //IterativePosPIDController::Gains{0.0006, 0.00008, 0.00008},
+   ratio,
+   {WHEEL_DIAMETER, CHASSIS_WIDTH}
+ );
+
+ auto profileController = AsyncControllerFactory::motionProfile(
+   10.0,  // Maximum linear velocity of the Chassis in m/s
+   0.5,  // Maximum linear acceleration of the Chassis in m/s/s
+   10.0, // Maximum linear jerk of the Chassis in m/s/s/s
+   chassis // Chassis Controller
+ );
+
+
+
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -27,11 +44,11 @@ auto chassis = ChassisControllerFactory::create(
  */
 void autonomous()
 {//int i = 0;
-  pros::ADIMotor m('A');
+  //pros::ADIMotor m('A');
+
 
   bool screenShowLogoOnly = true;
 	lv_obj_t * Teleop_LicensePlate;
-
 
   lv_style_copy(&style_plate_red, &lv_style_plain);    /*Copy a built-in style to initialize the new style*/
   style_plate_red.body.main_color = LV_COLOR_RED;
@@ -62,6 +79,14 @@ void autonomous()
 
 	}
 
+  chassis.setBrakeMode(AbstractMotor::brakeMode::brake);
+
+  //chassis.moveDistance(10*M_PI*4_in);
+  //profileController.generatePath({Point{0_ft, 0_ft, 0_deg}, Point{2*1.008*M_PI*4_in, 0_ft, 0_deg}}, "A");//
+  //profileController.setTarget("A");
+
+  chassis.stop();
+/*
   while(1)
   {
   //printf();
@@ -77,5 +102,7 @@ void autonomous()
   }
   //std::cout << i++ << "\n";
   pros::delay(10);
-  }
+}*/
+
+
 }

@@ -1,5 +1,7 @@
 #include "api.h"
+#include "okapi/api.hpp"
 
+using namespace okapi;
 /*
  * FILE DESCRIPTION
  * robot.hpp lays out the definitions of the functions, classes, and objects
@@ -9,6 +11,7 @@
 /*
  * Drivetrain pros::Motors (M_Drivetrain)
  */
+
 
 /*
  * (Ball) Intake pros::Motors (M_Intake)

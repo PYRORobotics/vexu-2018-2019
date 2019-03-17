@@ -54,7 +54,7 @@ void opcontrol()
 	lv_line_set_points(line1, heading_line_points, 2);     /*Set the points*/
 	lv_obj_align(line1, BaseObject_PositionIndicator, LV_ALIGN_CENTER, 0, 0);
 
-	bool screenShowLogoOnly = true;
+	bool screenShowLogoOnly = false;
 	lv_obj_t * Teleop_LicensePlate;
 
 
