@@ -2,7 +2,8 @@
 #include "robot.hpp"
 #include "autonRoutines.hpp"
 
-
+#ifndef SCREEN_HPP
+#define SCREEN_HPP
 
 
 
@@ -102,3 +103,5 @@ static lv_res_t btnm_action(lv_obj_t * btnm, const char *txt)
 }
 
 static const char * btnm_map[] = {"Red 1","Blue 1","Red 1","Blue 1",""};
+
+#endif

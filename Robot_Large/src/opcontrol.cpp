@@ -15,6 +15,8 @@
  */
 void opcontrol()
 {
+	chassis.MasterController.stop();
+
 	// SET UP SCREEN //
 	lv_obj_t * Teleop_MainBackground = lv_obj_create(lv_scr_act(), NULL);
 	lv_obj_set_size(Teleop_MainBackground, 480, 240);
@@ -86,27 +88,17 @@ void opcontrol()
 		lv_obj_align(PYRO_License_Plate, NULL, LV_ALIGN_CENTER, 0, -18);
 
 	}
-
 	// END SCREEN SETUP //
 
 
-	pros::Controller master(pros::E_CONTROLLER_MASTER);
-	pros::Motor left_mtr(1);
-	pros::Motor right_mtr(2);
-
-	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-		int x = master.get_analog(ANALOG_LEFT_X);
-		int y = master.get_analog(ANALOG_LEFT_Y);
-
-		left_mtr = x;
-		right_mtr = y;
+	while(1)
+	{
+		int x = Controller_0.get_analog(ANALOG_LEFT_X);
+		int y = Controller_0.get_analog(ANALOG_LEFT_Y);
 
 		int heading;
-		int headingX = -master.get_analog(ANALOG_RIGHT_X) * 10/127;
-		int headingY = master.get_analog(ANALOG_RIGHT_Y) * 10/127;
+		int headingX = -Controller_0.get_analog(ANALOG_RIGHT_X) * 10/127;
+		int headingY = Controller_0.get_analog(ANALOG_RIGHT_Y) * 10/127;
 
 		x0 = 0;
 		y0 = 0;
@@ -138,6 +130,11 @@ void opcontrol()
 		lv_obj_align(line1, BaseObject_PositionIndicator, LV_ALIGN_CENTER, -headingX/2, -headingY/2);
 
 		//std::cout << "Autonomous " << autonomousIDNum << "Running...";
+
+		chassis.teleop(arcade);
+		//intake.teleop();
+		//flywheel.teleop();
+		//...
 
 		pros::delay(20);
 	}

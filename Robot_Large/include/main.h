@@ -43,6 +43,7 @@
 #include "autonRoutines.hpp"
 #include "screen.hpp"
 #include "okapi/api.hpp"
+#include "controller.hpp"
 //#include "pros/api_legacy.h"
 
 /**

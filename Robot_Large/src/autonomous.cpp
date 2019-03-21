@@ -2,31 +2,6 @@
 
 //using namespace okapi;
 
-okapi::QLength WHEEL_DIAMETER = 4_in;//3.6_in;
-okapi::QLength CHASSIS_WIDTH = 12_in;
-okapi::MotorGroup MG_Drivetrain_Left = {6};
-okapi::MotorGroup MG_Drivetrain_Right = {6};
-
-
-okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
-
-
-auto chassis = ChassisControllerFactory::create(
-   //{16,15,18}, {-6,-7,-8},
-   MG_Drivetrain_Left, MG_Drivetrain_Right,
-   //IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
-   //IterativePosPIDController::Gains{0.00003, 0.00003, 0.00001},
-   //IterativePosPIDController::Gains{0.0006, 0.00008, 0.00008},
-   ratio,
-   {WHEEL_DIAMETER, CHASSIS_WIDTH}
- );
-
- auto profileController = AsyncControllerFactory::motionProfile(
-   10.0,  // Maximum linear velocity of the Chassis in m/s
-   0.5,  // Maximum linear acceleration of the Chassis in m/s/s
-   10.0, // Maximum linear jerk of the Chassis in m/s/s/s
-   chassis // Chassis Controller
- );
 
 
 
@@ -78,31 +53,34 @@ void autonomous()
 		lv_obj_align(PYRO_License_Plate, NULL, LV_ALIGN_CENTER, 0, -18);
 
 	}
+  //pros::Controller M(CONTROLLER_MASTER);
+  //chassis.teleop(M);
 
-  chassis.setBrakeMode(AbstractMotor::brakeMode::brake);
+  chassis.MasterController.setBrakeMode(AbstractMotor::brakeMode::brake);
 
   //chassis.moveDistance(10*M_PI*4_in);
-  //profileController.generatePath({Point{0_ft, 0_ft, 0_deg}, Point{2*1.008*M_PI*4_in, 0_ft, 0_deg}}, "A");//
-  //profileController.setTarget("A");
+  //chassis.MotionController.generatePath({Point{0_ft, 0_ft, 0_deg}, Point{2*1.008*M_PI*4_in, 0_ft, 0_deg}}, "A");//
+  //chassis.MotionController.setTarget("A");
 
-  chassis.stop();
-/*
-  while(1)
+
+  //chassis.MasterController.setMaxVoltage(500);
+
+//  while(1)
   {
   //printf();
   if(autonomousIDNum == 0)
   {
     std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
-    m.set_value(100);
+    autonomousRed1();
   }
   else if(autonomousIDNum == 1)
   {
     std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
-    m.set_value(-100);
+    //m.set_value(-100);
   }
   //std::cout << i++ << "\n";
   pros::delay(10);
-}*/
+}
 
 
 }

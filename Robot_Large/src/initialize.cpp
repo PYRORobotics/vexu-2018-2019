@@ -25,8 +25,7 @@ void initialize()
  */
 void disabled()
 {
-	pros::ADIMotor m('A');
-	m = 0;
+	//chassis.MasterController.stop();
 }
 
 /**
