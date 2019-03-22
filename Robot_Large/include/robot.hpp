@@ -22,12 +22,12 @@ class PYROChassis
  private:
    const okapi::MotorGroup MG_Drivetrain_Left = {1,-2,3};
    const okapi::MotorGroup MG_Drivetrain_Right = {-6,7,-8};
-   const okapi::QLength WHEEL_DIAMETER = 4_in;
-   const okapi::QLength CHASSIS_WIDTH = 12_in;
+   const okapi::QLength WHEEL_DIAMETER = 3.95_in;
+   const okapi::QLength CHASSIS_WIDTH = 12.25_in;
    const okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
 
  public:
-   ChassisControllerIntegrated MasterController;// = ChassisControllerFactory::create(
+   ChassisControllerPID MasterController;// = ChassisControllerFactory::create(
       //MG_Drivetrain_Left, MG_Drivetrain_Right,
       //IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
       //IterativePosPIDController::Gains{0.00003, 0.00003, 0.00001},

@@ -21,6 +21,7 @@ void autonomous()
 {//int i = 0;
   //pros::ADIMotor m('A');
 
+  chassis.MasterController.stop();
 
   bool screenShowLogoOnly = true;
 	lv_obj_t * Teleop_LicensePlate;
@@ -57,6 +58,7 @@ void autonomous()
   //chassis.teleop(M);
 
   chassis.MasterController.setBrakeMode(AbstractMotor::brakeMode::brake);
+  chassis.MasterController.resetSensors();
 
   //chassis.moveDistance(10*M_PI*4_in);
   //chassis.MotionController.generatePath({Point{0_ft, 0_ft, 0_deg}, Point{2*1.008*M_PI*4_in, 0_ft, 0_deg}}, "A");//

@@ -86,9 +86,9 @@ void PYROChassis::teleop(ControllerMode mode, pros::Controller Cont)
 
 PYROChassis::PYROChassis(int a) :  MasterController(ChassisControllerFactory::create(
    MG_Drivetrain_Left, MG_Drivetrain_Right,
-   //IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
-   //IterativePosPIDController::Gains{0.00003, 0.00003, 0.00001},
-   //IterativePosPIDController::Gains{0.0006, 0.00008, 0.00008},
+   IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
+   IterativePosPIDController::Gains{0.00003, 0.00003, 0.00001},
+   IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
    ratio,
    {WHEEL_DIAMETER, CHASSIS_WIDTH}
  )), MotionController(AsyncControllerFactory::motionProfile(
