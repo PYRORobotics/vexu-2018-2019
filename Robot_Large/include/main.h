@@ -44,6 +44,7 @@
 #include "screen.hpp"
 #include "okapi/api.hpp"
 #include "controller.hpp"
+#include "serial.hpp"
 //#include "pros/api_legacy.h"
 
 /**

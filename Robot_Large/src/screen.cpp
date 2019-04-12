@@ -68,7 +68,10 @@ void screenInit()
   lv_obj_set_hidden(autonSelectBtnMatrix, 1);
   lv_obj_set_style(autonSelectBtnMatrix, &lv_style_plain);
 
-
+  label_piconnection = lv_label_create(lv_scr_act(), NULL); 
+  lv_obj_align(label_piconnection, NULL, LV_ALIGN_CENTER, -100, -20);
+  lv_label_set_text(label_piconnection, "");
+  lv_obj_set_style(label_piconnection, &lv_style_plain);
 
   LV_IMG_DECLARE(Image_PYRO_Gold);
   LV_IMG_DECLARE(Image_ASU_White);

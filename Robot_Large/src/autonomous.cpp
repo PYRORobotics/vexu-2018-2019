@@ -3,9 +3,21 @@
 //using namespace okapi;
 
 
-
-
-
+/*
+void printSerialTaskfn(void*)
+{
+	while(1)
+	{
+		serialRead(NULL);
+		pros::lcd::print(0, "PRINT SERIAL IS ON");
+		pros::lcd::print(1, "Heading (deg): %f", HEADING_RAW);
+		pros::lcd::print(2, "ax (linear) (m/s): %f", ax);
+		pros::lcd::print(3, "ay (linear) (m/s): %f", ay);
+		pros::lcd::print(4, "az (linear) (m/s): %f", az);
+		pros::delay(20);
+	}
+}
+*/
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -20,6 +32,7 @@
 void autonomous()
 {//int i = 0;
   //pros::ADIMotor m('A');
+	//pros::Task printSerialTask(printSerialTaskfn, 0);
 
   chassis.MasterController.stop();
 
