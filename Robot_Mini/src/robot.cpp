@@ -97,17 +97,17 @@ PYROChassis chassis(0);
 bool intakeIsReversed = true;
 
 /* Main (Front) (Ball) Intake Motor */
-pros::Motor M_Intake_Main(1,pros::E_MOTOR_GEARSET_06,intakeIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
+pros::Motor M_Intake_Main(13,pros::E_MOTOR_GEARSET_06,intakeIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 
 /* Pre-flywheel Intake Motor */
-pros::Motor M_Intake_Preflywheel(2,pros::E_MOTOR_GEARSET_06,intakeIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
+pros::Motor M_Intake_Preflywheel(15,pros::E_MOTOR_GEARSET_06,intakeIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 
 PYROIntake::PYROIntake(int)
 {
   IntakeMain = &M_Intake_Main;
   Preflywheel = &M_Intake_Preflywheel;
 }
- 
+
 void PYROIntake::runMainIntake(int signal)
 {
   IntakeMain -> move(signal);
@@ -175,6 +175,7 @@ PYROIntake intake(0);
 bool flywheelIsReversed = false;
 
 /* Flywheel Lazy Susan (Turret) Rotation Motor */
+pros::Motor M_Flywheel_Turret(120,pros::E_MOTOR_GEARSET_36,!flywheelIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
 
 /* Flywheel Main Forward Driven Motor */
 pros::Motor M_Flywheel_F(11,pros::E_MOTOR_GEARSET_06,flywheelIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
@@ -186,7 +187,7 @@ pros::Motor M_Flywheel_R(12,pros::E_MOTOR_GEARSET_06,!flywheelIsReversed,pros::E
 pros::Motor M_Flywheel_Hood(20,pros::E_MOTOR_GEARSET_18,flywheelIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 
 PYROShooter::PYROShooter(int) : FlywheelPID(AsyncControllerFactory::velPID(
-  {-9, 10}, 0.001, 0.0001)
+  {-11, 12}, 0.001, 0.0001)
  )
 {
   FrontMotor = &M_Flywheel_F;
@@ -270,24 +271,20 @@ int armMillisSince;
 void PYROArm::teleop()
 {
   //pros::lcd::print(7,"%f", arm.ArmMain->get_position());
+  /*
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
   {
     speed = 90;
     goToPos(0, 0);
   }
-  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT) || Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT))
-  {
-    speed = 60;
-    goToPos(90);
-  }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
   {
     speed = 30;
-    goToPos(180);
-  }
-  if(Controller_0.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
+    goToPos(50);
+  }*/
+  /*if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
   {
-    speed = 120;
+    speed = 127;
     if(ArmMain->get_position() > 10)
     {
       goToPos(0, 0);
@@ -298,16 +295,25 @@ void PYROArm::teleop()
         pros::lcd::print(7, "%d", 500 + armMillisSince);
       }
     }
-    goToPos(30, 0);
+    goToPos(72, 0);
     armMillisSince = pros::millis();
-    while(pros::millis() < 300 + armMillisSince)
+    while(pros::millis() < 500 + armMillisSince)
     {
       pros::lcd::print(6, "%d", pros::millis());
       pros::lcd::print(7, "%d", 500 + armMillisSince);
     }
     speed = 30;
     goToPos(0, 0);
-
+  }*/
+  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
+  {
+    speed = 30;
+    goToPos(0, 0);
+  }
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
+  {
+    speed = 120;
+    goToPos(70, 0);
   }
 }
 
@@ -360,7 +366,7 @@ bool clawStartsExtended = false;
 
 /* Claw Rotation (Cap flip) Motor */
 //pros::Motor M_Claw_Rotate(100,pros::E_MOTOR_GEARSET_36,clawIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
-pros::Motor M_Arm_Main(19, pros::E_MOTOR_GEARSET_36, true, pros::E_MOTOR_ENCODER_DEGREES);
+pros::Motor M_Arm_Main(19, pros::E_MOTOR_GEARSET_36, false, pros::E_MOTOR_ENCODER_DEGREES);
 
 /*
  * (Cap) Lift Motors (M_Drivetrain)
@@ -433,6 +439,7 @@ bool dongerCurrentlyDown = true;
 bool dongerIsReversed = false;
 
 /* Left-front Drivetrain Motor */
+pros::Motor M_Donger_Main(14,pros::E_MOTOR_GEARSET_18,dongerIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
 
 /*
  * Ram Align Motor (M_Ramalign)

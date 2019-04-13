@@ -16,8 +16,8 @@ using namespace okapi;
 class PYROChassis
 {
  private:
-   const okapi::MotorGroup MG_Drivetrain_Left = {15,14,13};
-   const okapi::MotorGroup MG_Drivetrain_Right = {20,18,19};
+   const okapi::MotorGroup MG_Drivetrain_Left = {1,-2,3};
+   const okapi::MotorGroup MG_Drivetrain_Right = {-8,9,-10};
    const okapi::QLength WHEEL_DIAMETER = 3.95_in;
    const okapi::QLength CHASSIS_WIDTH = 12.25_in;
    const okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
