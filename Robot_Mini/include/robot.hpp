@@ -64,6 +64,8 @@ class PYROIntake
     pros::Motor* Preflywheel;
 
   public:
+    okapi::AsyncPosIntegratedController MainIntakePID;
+    okapi::AsyncPosIntegratedController PreFlywheelIntakePID;
     void runMainIntake(int signal);
     void runPreFlywheel(int signal);
     //void runAllMotors(int signal);
@@ -89,10 +91,12 @@ class PYROShooter
     pros::Motor* RearMotor;
     pros::Motor* HoodMotor;
     bool isRunning;
+
+  public:
+
     const double HOOD_MIN_ANGLE = 18;
     const double HOOD_MAX_ANGLE = 54;
 
-  public:
     okapi::AsyncVelPIDController FlywheelPID;
     void runFlywheel(int signal);
     //void runAllMotors(int signal);
@@ -125,14 +129,13 @@ class PYROArm
 
  public:
    //PYROClaw claw;
-
+   okapi::AsyncPosIntegratedController ArmPID;
    void resetPos();
    void goToPos(double degrees, bool hold = true); //1:3
 
    void teleop();
    PYROArm(int);
 } extern arm;
-
 
 
 extern bool clawIsReversed;
@@ -163,6 +166,7 @@ extern pros::Motor M_Lift_R;
     pros::Motor* DongerMain;
 
   public:
+    okapi::AsyncPosIntegratedController DongerPID;
     void resetPos();
     void goToPos(double degrees, bool hold = false); //1:3
 

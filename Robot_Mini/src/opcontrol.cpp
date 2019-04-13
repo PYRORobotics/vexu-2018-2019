@@ -28,6 +28,22 @@ void printSerialTaskfn(void*)
 	}
 }
 
+void shooterTask(void*)
+{
+	while(1)
+	{
+		shooter.teleop();
+		pros::delay(5);
+	}
+}
+void armTask(void*)
+{
+	while(1)
+	{
+		arm.teleop();
+		pros::delay(5);
+	}
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -45,6 +61,8 @@ void printSerialTaskfn(void*)
 void opcontrol()
 {
 	pros::Task printSerialTask(printSerialTaskfn, 0);
+	pros::Task shooterTeleopTask(shooterTask, NULL);
+	pros::Task armTeleopTask(armTask, NULL);
 	//chassis.MasterController.stop();
 /*
 	// SET UP SCREEN //
@@ -173,7 +191,8 @@ void opcontrol()
 		chassis.teleop();
 		intake.teleop();
 		//shooter.teleop();
-		arm.teleop();
+
+		//arm.teleop();
 		donger.teleop();
 		//...
 
