@@ -12,7 +12,7 @@ void initialize()
 {
 
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
+	//pros::lcd::set_text(1, "Hello PROS User!");
 	serialInit();
 
 	//styleInit();
@@ -42,5 +42,5 @@ void disabled()
  */
 void competition_initialize()
 {
-	screenCompetitionInit();
+	//screenCompetitionInit();
 }

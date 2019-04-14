@@ -102,12 +102,14 @@ pros::Motor M_Intake_Main(1,pros::E_MOTOR_GEARSET_06,intakeIsReversed,pros::E_MO
 /* Pre-flywheel Intake Motor */
 pros::Motor M_Intake_Preflywheel(2,pros::E_MOTOR_GEARSET_06,intakeIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 
-PYROIntake::PYROIntake(int)
+PYROIntake::PYROIntake(int) : MainIntakePID(AsyncControllerFactory::posIntegrated(-1)), PreFlywheelIntakePID(AsyncControllerFactory::posIntegrated(-2))
 {
   IntakeMain = &M_Intake_Main;
   Preflywheel = &M_Intake_Preflywheel;
+  MainIntakePID.flipDisable(true);
+  PreFlywheelIntakePID.flipDisable(true);
 }
- 
+
 void PYROIntake::runMainIntake(int signal)
 {
   IntakeMain -> move(signal);
@@ -143,25 +145,29 @@ void PYROIntake::shootBall(int numBalls)
 
 void PYROIntake::teleop(pros::Controller Cont)
 {
-  /*if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
-  {
-    runMainIntake(100);
-    runPreFlywheel(100);
-  }
-  else*/ if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L1))
-  {
-    runMainIntake(100);
-    runPreFlywheel(-100);
-  }
-  else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
-  {
-    runMainIntake(-100);
-    runPreFlywheel(-100);
-  }
-  else
-  {
-    runMainIntake(0);
-    runPreFlywheel(0);
+  if(intake.MainIntakePID.isDisabled() &&
+  intake.PreFlywheelIntakePID.isDisabled())
+    {
+    /*if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
+    {
+      runMainIntake(100);
+      runPreFlywheel(100);
+    }
+    else*/ if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L1))
+    {
+      runMainIntake(100);
+      runPreFlywheel(-100);
+    }
+    else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
+    {
+      runMainIntake(-100);
+      runPreFlywheel(-100);
+    }
+    else
+    {
+      runMainIntake(0);
+      runPreFlywheel(0);
+    }
   }
 }
 
@@ -175,15 +181,16 @@ PYROIntake intake(0);
 bool flywheelIsReversed = false;
 
 /* Flywheel Lazy Susan (Turret) Rotation Motor */
+pros::Motor M_Flywheel_Turret(120,pros::E_MOTOR_GEARSET_36,!flywheelIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
 
 /* Flywheel Main Forward Driven Motor */
-pros::Motor M_Flywheel_F(11,pros::E_MOTOR_GEARSET_06,flywheelIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
+pros::Motor M_Flywheel_F(10,pros::E_MOTOR_GEARSET_06,flywheelIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 
 /* Flywheel Main Rear Driven Motor */
-pros::Motor M_Flywheel_R(12,pros::E_MOTOR_GEARSET_06,!flywheelIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
+pros::Motor M_Flywheel_R(9,pros::E_MOTOR_GEARSET_06,!flywheelIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 
 /* Flywheel Hood Motor */
-pros::Motor M_Flywheel_Hood(20,pros::E_MOTOR_GEARSET_18,flywheelIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
+pros::Motor M_Flywheel_Hood(3,pros::E_MOTOR_GEARSET_18,flywheelIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
 
 PYROShooter::PYROShooter(int) : FlywheelPID(AsyncControllerFactory::velPID(
   {-9, 10}, 0.001, 0.0001)
@@ -200,18 +207,19 @@ PYROShooter::PYROShooter(int) : FlywheelPID(AsyncControllerFactory::velPID(
 void PYROShooter::setHoodAngle(double angle)
 {
   if(angle >= HOOD_MIN_ANGLE && angle <= HOOD_MAX_ANGLE)
-    HoodMotor->move_absolute(angle, 50); //FIXME Test and Increase speed?
+    HoodMotor->move_absolute((HOOD_MAX_ANGLE - angle)*201/14, 50); //FIXME Test and Increase speed?
 }
 
 void PYROShooter::runFlywheel(int rpm)
 {
   //FrontMotor->move_velocity(500);
-  //FlywheelPID.setTarget(rpm);
+  FlywheelPID.setTarget(rpm);
 }
 
 int flywheelMillisSince;
+
 void PYROShooter::teleop(pros::Controller Cont)
-{
+{/*
   runFlywheel(500);
   if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
@@ -236,19 +244,108 @@ void PYROShooter::teleop(pros::Controller Cont)
     }
     intake.shootBall(2);
     FlywheelPID.flipDisable(false);
+  }*/
+  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+  {
+    Cont.rumble(".");
+    intake.MainIntakePID.flipDisable(false);
+    intake.PreFlywheelIntakePID.flipDisable(false);
+    //intake.MainIntakePID.reset();
+    //intake.PreFlywheelIntakePID.reset();
+    FlywheelPID.flipDisable(false);
+    FlywheelPID.controllerSet(1);
+    intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+    runFlywheel(80);
+    pros::delay(500);
+    FlywheelPID.waitUntilSettled();
+    intake.MainIntakePID.setTarget(200 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
+    intake.PreFlywheelIntakePID.waitUntilSettled();
+    runFlywheel(0);
+    intake.MainIntakePID.flipDisable(true);
+    intake.PreFlywheelIntakePID.flipDisable(true);
+    FlywheelPID.flipDisable(true);
+
+    pros::lcd::print(7, "Shooting");
+  }
+  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+  {
+    Cont.rumble("- .");
+    setHoodAngle(34);
+    intake.MainIntakePID.flipDisable(false);
+    intake.PreFlywheelIntakePID.flipDisable(false);
+    //intake.MainIntakePID.reset();
+    //intake.PreFlywheelIntakePID.reset();
+    FlywheelPID.flipDisable(false);
+    FlywheelPID.controllerSet(1);
+    intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+    runFlywheel(82);
+    pros::delay(500);
+    FlywheelPID.waitUntilSettled();
+    intake.MainIntakePID.setTarget(200 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
+    intake.PreFlywheelIntakePID.waitUntilSettled();
+
+    setHoodAngle(23);
+    FlywheelPID.controllerSet(1);
+    intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+    runFlywheel(82);
+    pros::delay(500);
+    FlywheelPID.waitUntilSettled();
+    intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
+    intake.PreFlywheelIntakePID.waitUntilSettled();
+    runFlywheel(0);
+    intake.MainIntakePID.flipDisable(true);
+    intake.PreFlywheelIntakePID.flipDisable(true);
+    FlywheelPID.flipDisable(true);
+
+    pros::lcd::print(7, "Shooting");
+  }
+  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+  {
+    setHoodAngle(34);
+    Cont.rumble(". -");
+    Controller_1.rumble(". -");
+  }
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+  {
+    setHoodAngle(23);
+    Cont.rumble(". .");
+    Controller_1.rumble(". .");
+  }
+  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
+  {
+    FlywheelPID.flipDisable(false);
+    FlywheelPID.setTarget(87);
+  }
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
+  {
+    FlywheelPID.controllerSet(0);
+    FlywheelPID.flipDisable(true);
   }
 
 }
+
+/*void PYROShooter::teleopTask(void*)
+{
+  teleop();
+}*/
 
 PYROShooter shooter(0);
 /*
  * Cap Intake (Claw) Motors and Pneumatics (Actuators) (M_Claw and P_Claw)
  */
 
-PYROArm::PYROArm(int)// : claw(0)
+PYROArm::PYROArm(int) : ArmPID(AsyncControllerFactory::posIntegrated(7)), claw(0)
 {
   ArmMain = &M_Arm_Main;
+  ArmMain->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   speed = 0;
+  ArmPID.reset();
 }
 
 void PYROArm::resetPos()
@@ -262,32 +359,29 @@ void PYROArm::goToPos(double degrees, bool hold)
     ArmMain -> set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   else
     ArmMain -> set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-  ArmMain -> move_absolute(degrees * 3, speed);
+  ArmMain -> move_absolute(degrees, 120);
 }
 
-int armMillisSince;
+//int armMillisSince;
 
 void PYROArm::teleop()
 {
+  claw.teleop(Controller_1);
   //pros::lcd::print(7,"%f", arm.ArmMain->get_position());
+  /*
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
   {
     speed = 90;
     goToPos(0, 0);
   }
-  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT) || Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT))
-  {
-    speed = 60;
-    goToPos(90);
-  }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
   {
     speed = 30;
-    goToPos(180);
-  }
-  if(Controller_0.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
+    goToPos(50);
+  }*/
+  /*if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
   {
-    speed = 120;
+    speed = 127;
     if(ArmMain->get_position() > 10)
     {
       goToPos(0, 0);
@@ -298,16 +392,57 @@ void PYROArm::teleop()
         pros::lcd::print(7, "%d", 500 + armMillisSince);
       }
     }
-    goToPos(30, 0);
+    goToPos(72, 0);
     armMillisSince = pros::millis();
-    while(pros::millis() < 300 + armMillisSince)
+    while(pros::millis() < 500 + armMillisSince)
     {
       pros::lcd::print(6, "%d", pros::millis());
       pros::lcd::print(7, "%d", 500 + armMillisSince);
     }
     speed = 30;
     goToPos(0, 0);
+  }*/
+  /*if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
+  {
+    //speed = 30;
+    //goToPos(0, 0);
+    ArmPID.setTarget(0);
+  }*/
+  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+  {
+    ArmPID.flipDisable(false);
+    //speed = 120;
+    //goToPos(70, 0);
+    ArmPID.setTarget(170); //3:1 Ratio
+    ArmPID.waitUntilSettled();
+    ArmPID.setTarget(0);
+  }
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+  {
+    ArmPID.flipDisable(false);
+    double target = ArmPID.getTarget();
 
+    if(ArmMain->get_position() < 10)
+    {
+      goToPos(425);
+    }
+    else if(ArmMain->get_position() > 400)
+    {
+      goToPos(-20);
+    }
+
+    //if(target == 0)
+      //ArmPID.setTarget(425);
+      /*
+    else if(target == 80)
+    {
+      ArmPID.setTarget(97);
+      ArmPID.waitUntilSettled();
+      pros::delay(500);
+      ArmPID.flipDisable(true);
+    }*/
+    //else
+      //ArmPID.setTarget(0);
   }
 }
 
@@ -330,22 +465,44 @@ void PYROClaw::runIntake(int signal, bool inward)
     ClawMain->move(-signal);
   }
 }
-
+double lastTorques[100] = {0};
+int torquei = 0;
+double averageTorque = 0;
 void PYROClaw::teleop(pros::Controller Cont)
 {
-    if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
+  lastTorques[torquei] = ClawMain->get_torque();
+  averageTorque = 0;
+  for(int i = 0; i < 100; i++)
+  {
+    averageTorque += lastTorques[i];
+  }
+  averageTorque /= 100;
+
+  runIntake(0);
+    if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
     {
-      runIntake(120);
+      pros::lcd::print(4, "Torque (Nm): %f", ClawMain->get_torque());
+      pros::lcd::print(5, "AVG Torque (Nm): %f", averageTorque);
+      ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+      if(averageTorque<0.2)
+        runIntake(120);
     }
-    else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
+    else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
     {
-      runIntake(-100);
+      ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+      runIntake(-60);
     }
     /* //UNCOMMENT AND CHANGE NEW PRESS -> get_digital FOR HOLD INSTEAD OF TOGGLE
     else
     {
       runIntake(0);
     }*/
+
+    if(torquei == 99)
+      torquei = 0;
+    else
+      torquei++;
 }
 
 /*Reverses Claw Acutators if true (Normally false)*/
@@ -355,12 +512,12 @@ bool clawStartsExtended = false;
 /* Claw Cap Grabbing Pneumatic Actuator */
 //Piston P_Claw_Main('A', clawStartsExtended);
 //ADIDigitalOut P_Claw_Main('A', clawIsReversed);
-//pros::Motor M_Claw_Main(20,pros::E_MOTOR_GEARSET_36,clawIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
+pros::Motor M_Claw_Main(16,pros::E_MOTOR_GEARSET_36,clawIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 //pros::Motor M_Claw_Main(121,pros::E_MOTOR_GEARSET_36,clawIsReversed,pros::E_MOTOR_ENCODER_ROTATIONS);
 
 /* Claw Rotation (Cap flip) Motor */
-//pros::Motor M_Claw_Rotate(100,pros::E_MOTOR_GEARSET_36,clawIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
-pros::Motor M_Arm_Main(19, pros::E_MOTOR_GEARSET_36, true, pros::E_MOTOR_ENCODER_DEGREES);
+pros::Motor M_Claw_Rotate(17,pros::E_MOTOR_GEARSET_36,!clawIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
+pros::Motor M_Arm_Main(7, pros::E_MOTOR_GEARSET_36, true, pros::E_MOTOR_ENCODER_DEGREES);
 
 /*
  * (Cap) Lift Motors (M_Drivetrain)
@@ -378,8 +535,8 @@ bool liftIsReversed = true;
 /*
  * Donger (Cap Tilter for Ball Intake) Motor (M_Donger)
  */
-
- PYRODonger::PYRODonger(int)
+/*
+ PYRODonger::PYRODonger(int) : DongerPID(AsyncControllerFactory::posIntegrated(104))
  {
    DongerMain = &M_Donger_Main;
  }
@@ -397,24 +554,29 @@ bool liftIsReversed = true;
      DongerMain -> set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
    DongerMain -> move_absolute(degrees * 6, 100);
  }
-bool dongerCurrentlyDown = true;
+
+ bool dongerCurrentlyDown = false;
  void PYRODonger::teleop(pros::Controller Cont)
  {
-     if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) //Dong balls
+
+   if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) //Dong balls
+   {
+     if(dongerCurrentlyDown)
      {
-       if(dongerCurrentlyDown)
-       {
-         goToPos(190);
+       //goToPos(190);
+       DongerPID.setTarget(190*6);
 
-         dongerCurrentlyDown = !dongerCurrentlyDown;
-       }
-       else
-       {
-         goToPos(150); //faster up
-
-         dongerCurrentlyDown = !dongerCurrentlyDown;
-       }
+       dongerCurrentlyDown = !dongerCurrentlyDown;
      }
+     else
+     {
+       //goToPos(150); //faster up
+
+       DongerPID.setTarget(150*6);
+
+       dongerCurrentlyDown = !dongerCurrentlyDown;
+     }
+   }
      /*
      else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) //Flip
      {
@@ -425,14 +587,15 @@ bool dongerCurrentlyDown = true;
        }
        goToPos(0); //faster up
      }*/
- }
+ //}
 
- PYRODonger donger(0);
+// PYRODonger donger(0);
 
 /*Reverses Donger Motor if true (Normally false)*/
 bool dongerIsReversed = false;
 
 /* Left-front Drivetrain Motor */
+//pros::Motor M_Donger_Main(14,pros::E_MOTOR_GEARSET_18,dongerIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
 
 /*
  * Ram Align Motor (M_Ramalign)

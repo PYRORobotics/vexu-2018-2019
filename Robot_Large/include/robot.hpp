@@ -17,7 +17,7 @@ class PYROChassis
 {
  private:
    const okapi::MotorGroup MG_Drivetrain_Left = {15,14,13};
-   const okapi::MotorGroup MG_Drivetrain_Right = {20,18,19};
+   const okapi::MotorGroup MG_Drivetrain_Right = {-20,-18,-19};
    const okapi::QLength WHEEL_DIAMETER = 3.95_in;
    const okapi::QLength CHASSIS_WIDTH = 12.25_in;
    const okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
@@ -64,6 +64,8 @@ class PYROIntake
     pros::Motor* Preflywheel;
 
   public:
+    okapi::AsyncPosIntegratedController MainIntakePID;
+    okapi::AsyncPosIntegratedController PreFlywheelIntakePID;
     void runMainIntake(int signal);
     void runPreFlywheel(int signal);
     //void runAllMotors(int signal);
@@ -89,10 +91,12 @@ class PYROShooter
     pros::Motor* RearMotor;
     pros::Motor* HoodMotor;
     bool isRunning;
+
+  public:
+
     const double HOOD_MIN_ANGLE = 18;
     const double HOOD_MAX_ANGLE = 54;
 
-  public:
     okapi::AsyncVelPIDController FlywheelPID;
     void runFlywheel(int signal);
     //void runAllMotors(int signal);
@@ -122,10 +126,11 @@ class PYROArm
  private:
    pros::Motor* ArmMain;
    int speed;
+   const double ARM_GEAR_RATIO = 30/12;
 
  public:
-   //PYROClaw claw;
-
+   PYROClaw claw;
+   okapi::AsyncPosIntegratedController ArmPID;
    void resetPos();
    void goToPos(double degrees, bool hold = true); //1:3
 
@@ -134,14 +139,13 @@ class PYROArm
 } extern arm;
 
 
-
 extern bool clawIsReversed;
 extern bool clawStartsExtended;
 
 //extern Piston P_Claw_Main;
 //extern ADIDigitalOut P_Claw_Main;
 extern pros::Motor M_Claw_Main;
-//extern pros::Motor M_Claw_Rotate;
+extern pros::Motor M_Claw_Rotate;
 extern pros::Motor M_Arm_Main;
 
 /*
@@ -156,13 +160,14 @@ extern pros::Motor M_Lift_R;
 /*
  * Donger (Cap Tilter for Ball Intake) pros::Motor (M_Donger)
  */
-
+/*
  class PYRODonger
  {
   private:
     pros::Motor* DongerMain;
 
   public:
+    okapi::AsyncPosIntegratedController DongerPID;
     void resetPos();
     void goToPos(double degrees, bool hold = false); //1:3
 
