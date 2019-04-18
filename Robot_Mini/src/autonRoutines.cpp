@@ -24,17 +24,44 @@ void autonomousRed1()
   intake.runPreFlywheel(-50);
   //chassis.MasterController.turnAngle(-94_deg);
   //chassis.MasterController.waitUntilSettled();
+
+  chassis.MasterController.setMaxVelocity(600);
+  chassis.MasterController.stop();
   chassis.turn(0);
+  chassis.MasterController.stop();
 
-  if(shooter.FlywheelPID.isDisabled())
-    shooter.FlywheelPID.flipDisable();
+  //////
+  shooter.setHoodAngle(34);
+  intake.MainIntakePID.flipDisable(false);
+  intake.PreFlywheelIntakePID.flipDisable(false);
+  //intake.MainIntakePID.reset();
+  //intake.PreFlywheelIntakePID.reset();
+  shooter.FlywheelPID.flipDisable(false);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(360 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(360 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
 
-  shooter.FlywheelPID.setTarget(300);
-  pros::delay(1800);
-  //while(fabs(shooter.FlywheelPID.getError()) > 50)
-  //{
-    //pros::delay(10);
-  //}
+  shooter.setHoodAngle(23);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+  shooter.runFlywheel(0);
+  intake.MainIntakePID.flipDisable(true);
+  intake.PreFlywheelIntakePID.flipDisable(true);
+  shooter.FlywheelPID.flipDisable(true);
+  //////
   chassis.MasterController.stop();
   chassis.MasterController.setMaxVelocity(6000); //rpm
 

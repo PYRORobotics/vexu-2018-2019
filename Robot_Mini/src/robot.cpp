@@ -72,6 +72,8 @@ double PYROChassis::turn(double degrees)
 
     if(fabs(error) < 0.1)
     {
+      MasterController.right(0);
+      MasterController.left(0);
       MasterController.stop();
       MasterController.waitUntilSettled();
       break;
