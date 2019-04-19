@@ -2,32 +2,58 @@
 #include "../include/main.h"
 
 
-int autonomousIDNum = -1;
+int autonomousIDNum = 0;
 
 void autonomousRed1()
 {
+  //CW = (+), CCW, = (-) for turning
+  shooter.FlywheelPID.flipDisable(true);
   chassis.MasterController.setMaxVelocity(60); //rpm
-  intake.runMainIntake(100);
-  intake.runPreFlywheel(-100);
-  chassis.MasterController.moveDistance(30_in);
+  arm.ArmPID.tarePosition();
+  arm.ArmMain->tare_position();
+
+  intake.runMainIntake(100);    //Power on ball collector
+  intake.runPreFlywheel(-100);   //Power on ball collector
+  chassis.MasterController.moveDistance(30_in); //Drive forward toward ball under cap
   chassis.MasterController.waitUntilSettled();
-  //chassis.MasterController.setMaxVelocity(40); //rpm
-  chassis.MasterController.moveDistance(15_in);
+
+  chassis.MasterController.moveDistance(14_in); //Drive forward into ball under cap
   chassis.MasterController.waitUntilSettled();
-  //chassis.MasterController.setMaxVelocity(60); //rpm
 
   std::cout << "At 1, going to 2\n";
-  chassis.MasterController.moveDistance(-46_in);
+  chassis.MasterController.moveDistance(-30_in);  //Drive backward to inner edge of starting tile
   chassis.MasterController.waitUntilSettled();
   std::cout << "At 2, turning to 3\n";
   intake.runMainIntake(50);
   intake.runPreFlywheel(-50);
-  //chassis.MasterController.turnAngle(-94_deg);
-  //chassis.MasterController.waitUntilSettled();
-  chassis.turn(0);
 
-  if(shooter.FlywheelPID.isDisabled())
-    shooter.FlywheelPID.flipDisable();
+  chassis.MasterController.turnAngle(-147_deg); //Turn to have cap intake face lower cap
+  chassis.MasterController.waitUntilSettled();
+
+  arm.claw.runIntake(100,true); //Forward cap intake
+  arm.goToPos(-20, true);  //Place cap on side post
+  chassis.MasterController.moveDistance(-34_in);  //Drive backward into lower cap
+  chassis.MasterController.waitUntilSettled();
+
+  chassis.MasterController.moveDistance(15_in); //Drive forward to be horizontally aligned with side post
+  chassis.MasterController.waitUntilSettled();
+
+  chassis.MasterController.turnAngle(-40_deg); //Turn to have ball intake face side post
+  chassis.MasterController.waitUntilSettled();
+
+  chassis.MasterController.moveDistance(27_in); //Drive forward into side post (ram align)
+  chassis.MasterController.waitUntilSettled();
+
+  arm.ArmMain->move_absolute(425, 600);  //Place cap on side post
+  pros::delay(5000);
+
+  //arm.goToPos(425, true);  //Keep arm where it is
+  arm.claw.runIntake(100, false); //Reverse cap intake
+  chassis.MasterController.moveDistance(-10_in);  //Drive backward to be clear of obstacles before turning
+  chassis.MasterController.waitUntilSettled();
+
+  pros::delay(99999999);
+
 
   shooter.FlywheelPID.setTarget(300);
   pros::delay(1800);
@@ -38,7 +64,7 @@ void autonomousRed1()
   chassis.MasterController.stop();
   chassis.MasterController.setMaxVelocity(6000); //rpm
 
-  chassis.turn(-4.5);
+  //chassis.turn(-4.5);
 
   intake.runMainIntake(100);
   intake.runPreFlywheel(100);
@@ -61,7 +87,8 @@ void autonomousRed1()
   chassis.MasterController.waitUntilSettled();
   std::cout << "At 2, turning to 3\n";
   //chassis.MasterController.turnAngle(30_deg);
-  chassis.turn(45);
+  //chassis.turn(45);
+
   chassis.MasterController.waitUntilSettled();
   /*std::cout << "Facing 3, going to 3\n";
   chassis.MasterController.moveDistance(10_in);
