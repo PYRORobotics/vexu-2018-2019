@@ -33,9 +33,9 @@ void PYROChassis::teleop(ControllerMode mode, pros::Controller Cont)
 
 PYROChassis::PYROChassis(int a) :  MasterController(ChassisControllerFactory::create(
    MG_Drivetrain_Left, MG_Drivetrain_Right,
-   IterativePosPIDController::Gains{0.001, 0.0008, 0.0005},
-   IterativePosPIDController::Gains{0.006, 0.005, 0.00008},
-   IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
+   IterativePosPIDController::Gains{0.001, 0.0008, 0.0005},   //straight
+   IterativePosPIDController::Gains{0.01, 0.08, 0.00009},    //correct drift
+   IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},  //turn
    ratio,
    {WHEEL_DIAMETER, CHASSIS_WIDTH}
  )), MotionController(AsyncControllerFactory::motionProfile(
@@ -350,7 +350,7 @@ PYROArm::PYROArm(int) : ArmPID(AsyncControllerFactory::posIntegrated(7)), claw(0
 
 void PYROArm::resetPos()
 {
-  ArmMain -> tare_position();
+  ArmMain -> tare_position(); 
 }
 
 void PYROArm::goToPos(double degrees, bool hold)
@@ -465,6 +465,8 @@ void PYROClaw::runIntake(int signal, bool inward)
     ClawMain->move(-signal);
   }
 }
+
+
 double lastTorques[100] = {0};
 int torquei = 0;
 double averageTorque = 0;
