@@ -34,17 +34,17 @@ void autonomous()
   //pros::ADIMotor m('A');
 	//pros::Task printSerialTask(printSerialTaskfn, 0);
 
-  chassis.MasterController.stop();
+  chassis.MasterController.stop();/*
 
   bool screenShowLogoOnly = true;
 	lv_obj_t * Teleop_LicensePlate;
 
-  lv_style_copy(&style_plate_red, &lv_style_plain);    /*Copy a built-in style to initialize the new style*/
+  lv_style_copy(&style_plate_red, &lv_style_plain);
   style_plate_red.body.main_color = LV_COLOR_RED;
   style_plate_red.body.grad_color = LV_COLOR_RED;
   style_plate_red.body.border.color = LV_COLOR_RED;
 
-  lv_style_copy(&style_plate_blue, &lv_style_plain);    /*Copy a built-in style to initialize the new style*/
+  lv_style_copy(&style_plate_blue, &lv_style_plain);
   style_plate_blue.body.main_color = LV_COLOR_BLUE;
   style_plate_blue.body.grad_color = LV_COLOR_BLUE;
   style_plate_blue.body.border.color = LV_COLOR_BLUE;
@@ -66,7 +66,7 @@ void autonomous()
 		lv_img_set_src(PYRO_License_Plate, &Image_PYRO_License_Plate);
 		lv_obj_align(PYRO_License_Plate, NULL, LV_ALIGN_CENTER, 0, -18);
 
-	}
+	}*/
   //pros::Controller M(CONTROLLER_MASTER);
   //chassis.teleop(M);
 
