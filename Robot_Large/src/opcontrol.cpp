@@ -61,8 +61,8 @@ void armTask(void*)
 void opcontrol()
 {
 	pros::Task printSerialTask(printSerialTaskfn, 0);
-	//pros::Task shooterTeleopTask(shooterTask, NULL);
-	//pros::Task armTeleopTask(armTask, NULL);
+	pros::Task shooterTeleopTask(shooterTask, NULL);
+	pros::Task armTeleopTask(armTask, NULL);
 	//chassis.MasterController.stop();
 /*
 	// SET UP SCREEN //
@@ -189,10 +189,8 @@ void opcontrol()
 		////if(doStuff)
 			////chassis.MasterController.rotate(heading / 15 * 0.048);
 		chassis.teleop(arcade);
-		//intake.teleop();
-		//shooter.teleop();
+		intake.teleop();
 
-		//arm.teleop();
 		//donger.teleop();
 		//...
 
@@ -210,8 +208,8 @@ void opcontrol()
 		//M_Lift_L = -HEADING_ADJUSTED;
 
 
-		pros::lcd::print(4, "ms since last update: %f", msSinceLastUpdate);
-		pros::lcd::print(5, "last ID: %d", lastID);
+		//pros::lcd::print(4, "ms since last update: %f", msSinceLastUpdate);
+		//pros::lcd::print(5, "last ID: %d", lastID);
 
 		pros::delay(20);
 	}
