@@ -7,50 +7,154 @@ int autonomousIDNum = 0;
 void autonomousRed1()
 {
   //CW = (+), CCW, = (-) for turning
+  // shooter.FlywheelPID.flipDisable(true);
+  // chassis.MasterController.setMaxVelocity(10000); //rpm
+  // arm.ArmPID.tarePosition();
+  // arm.ArmMain->tare_position();
+  //
+  // intake.runMainIntake(100);    //Power on ball collector
+  // intake.runPreFlywheel(-100);   //Power on ball collector
+  // chassis.MasterController.moveDistance(44_in); //Drive forward into ball under cap
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // chassis.MasterController.turnAngle(-90_deg);  //Turn to back face bottom cap
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // chassis.MasterController.moveDistance(20_in); //Drive forward into platforms to align
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // arm.claw.runIntake(100,true);                 //Forward cap intake
+  // arm.goToPos(-20, true);                       //Keep arm down to lower limit
+  //
+  // chassis.MasterController.moveDistance(-48_in); //Drive backward into cap to grab cap
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // arm.goToPos(0, false);                       //Keep arm boyant
+  //
+  // chassis.MasterController.moveDistance(20_in); //Drive forward to prepare to grab cap again
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // arm.goToPos(-20, true);                       //Keep arm down to lower limit
+  //
+  // chassis.MasterController.moveDistance(-20_in); //Drive backward into cap to grab cap again
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // chassis.MasterController.moveDistance(20_in); //Drive forward to horizontally align with side post
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // //chassis.MasterController.moveDistance(-30_in);  //Drive backward to inner edge of starting tile
+  // //chassis.MasterController.waitUntilSettled();
+  //
+  //
+  //
+  // pros::delay(99999999);
+
+
+  //------------------------------------old code ---------------------------------------------------
+  //CW = (+), CCW, = (-) for turning
   shooter.FlywheelPID.flipDisable(true);
-  chassis.MasterController.setMaxVelocity(60); //rpm
+  chassis.MasterController.setMaxVelocity(10000); //rpm, originally 60
   arm.ArmPID.tarePosition();
   arm.ArmMain->tare_position();
 
   intake.runMainIntake(100);    //Power on ball collector
   intake.runPreFlywheel(-100);   //Power on ball collector
-  chassis.MasterController.moveDistance(30_in); //Drive forward toward ball under cap
-  chassis.MasterController.waitUntilSettled();
-
-  chassis.MasterController.moveDistance(14_in); //Drive forward into ball under cap
+  // chassis.MasterController.moveDistance(30_in); //Drive forward toward ball under cap
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // chassis.MasterController.moveDistance(14_in); //Drive forward into ball under cap
+  chassis.MasterController.moveDistance(44_in); //Drive forward into ball under cap
   chassis.MasterController.waitUntilSettled();
 
   std::cout << "At 1, going to 2\n";
+  arm.ArmMain->move_absolute(425, 600);  //Raise arm out of the way
   chassis.MasterController.moveDistance(-30_in);  //Drive backward to inner edge of starting tile
   chassis.MasterController.waitUntilSettled();
   std::cout << "At 2, turning to 3\n";
   intake.runMainIntake(50);
   intake.runPreFlywheel(-50);
 
-  chassis.MasterController.turnAngle(-147_deg); //Turn to have cap intake face lower cap
+  // chassis.MasterController.moveDistance(-10_in);  //Drive backward to ram align with side wall
+  // chassis.MasterController.waitUntilSettled();
+  //
+  // chassis.MasterController.moveDistance(10_in);  //Drive forward to align with cap
+  // chassis.MasterController.waitUntilSettled();
+
+  arm.goToPos(0, false);                        //Lower arm to lower limit
+  chassis.MasterController.turnAngle(-140_deg); //Turn to have cap intake face lower cap
   chassis.MasterController.waitUntilSettled();
 
-  arm.claw.runIntake(100,true); //Forward cap intake
-  arm.goToPos(-20, true);  //Place cap on side post
+  arm.claw.runIntake(100, true);                   //Forward cap intake
+  arm.goToPos(-20, true);                         //Keep arm down to lower limit
   chassis.MasterController.moveDistance(-34_in);  //Drive backward into lower cap
   chassis.MasterController.waitUntilSettled();
 
-  chassis.MasterController.moveDistance(15_in); //Drive forward to be horizontally aligned with side post
+  chassis.MasterController.moveDistance(18_in); //Drive forward to be horizontally aligned with side post
   chassis.MasterController.waitUntilSettled();
 
-  chassis.MasterController.turnAngle(-40_deg); //Turn to have ball intake face side post
+  chassis.MasterController.turnAngle(-35_deg); //Turn to front face side post
   chassis.MasterController.waitUntilSettled();
 
-  chassis.MasterController.moveDistance(27_in); //Drive forward into side post (ram align)
+  chassis.MasterController.moveDistance(25_in); //Drive forward into side post (ram align)
   chassis.MasterController.waitUntilSettled();
 
-  arm.ArmMain->move_absolute(425, 600);  //Place cap on side post
+  arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
   pros::delay(5000);
 
-  //arm.goToPos(425, true);  //Keep arm where it is
-  arm.claw.runIntake(100, false); //Reverse cap intake
+  arm.claw.runIntake(100, false);                 //Reverse cap intake
   chassis.MasterController.moveDistance(-10_in);  //Drive backward to be clear of obstacles before turning
   chassis.MasterController.waitUntilSettled();
+
+  arm.claw.runIntake(0, true);                   //Stop cap intake
+  chassis.MasterController.turnAngle(-60_deg); //Turn to prepare to horizontally align with upper cap
+  chassis.MasterController.waitUntilSettled();
+
+  chassis.MasterController.moveDistance(-14_in);  //Drive backward to horizontally align with upper cap
+  chassis.MasterController.waitUntilSettled();
+
+  arm.goToPos(0, false);                         //Bring arm down to lower limit
+  chassis.MasterController.turnAngle(60_deg); //Turn to back face upper cap
+  chassis.MasterController.waitUntilSettled();
+
+  //chassis.MasterController.moveDistance(30_in);  //Drive forward to ram align into side wall
+  //pros::delay(3000);
+
+  arm.claw.runIntake(100, true);                   //Forward cap intake
+  arm.goToPos(-20, true);                         //Keep arm down to lower limit
+  chassis.MasterController.moveDistance(-30_in);  //Drive backward into upper cap
+  chassis.MasterController.waitUntilSettled();
+
+  arm.ArmMain->move_absolute(425, 600);           //Raise cap above robot
+  chassis.MasterController.moveDistance(40_in);  //Drive forward to align with bottom post
+  chassis.MasterController.waitUntilSettled();
+
+  chassis.MasterController.turnAngle(-108_deg); //Turn to front face lower post
+  chassis.MasterController.waitUntilSettled();
+
+  arm.goToPos(0, false);                         //Bring arm down to lower limit
+  chassis.MasterController.moveDistance(24_in);  //Drive forward into bottom post (ram align)
+  chassis.MasterController.waitUntilSettled();
+
+  arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  pros::delay(5000);
+
+  arm.claw.runIntake(100, false);                 //Reverse cap intake
+  chassis.MasterController.moveDistance(-10_in);  //Drive backward to be clear of obstacles before turning
+  chassis.MasterController.waitUntilSettled();
+
+  arm.claw.runIntake(0, true);                    //Stop cap intake
+  chassis.MasterController.turnAngle(-90_deg);    //Turn to front face cross-court shooting area
+  chassis.MasterController.waitUntilSettled();
+
+  arm.goToPos(0, true);                         //Bring arm down to lower limit
+  chassis.MasterController.moveDistance(30_in);  //Drive forward into bottom post (ram align)
+  chassis.MasterController.waitUntilSettled();
+
+
+
+  arm.goToPos(0, false);                         //Bring arm down to lower limit and release hold
+  intake.runMainIntake(0);    //Power on ball collector
+  intake.runPreFlywheel(0);   //Power on ball collector
 
   pros::delay(99999999);
 
