@@ -19,7 +19,7 @@ class PYROChassis
    const okapi::MotorGroup MG_Drivetrain_Left = {15,14,13};
    const okapi::MotorGroup MG_Drivetrain_Right = {-20,-18,-19};
    const okapi::QLength WHEEL_DIAMETER = 3.95_in;
-   const okapi::QLength CHASSIS_WIDTH = 13.9_in;//14.19_in;//13.625_in;
+   const okapi::QLength CHASSIS_WIDTH = 16.5_in;//13.9_in;//14.19_in;//13.625_in;
    const okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
    //double yaw;
  public:
@@ -114,8 +114,11 @@ class PYROShooter
   private:
     pros::Motor* ClawMain;
 
+
   public:
+    pros::Motor* ClawRotate;
     void runIntake(int signal, bool inward = true);
+    void rotate(double deg);
 
     void teleop(pros::Controller Cont = Controller_0);
     PYROClaw(int);
@@ -128,12 +131,14 @@ class PYROArm
    const double ARM_GEAR_RATIO = 30/12;
 
  public:
+   bool isFirstTime;
+   bool isCurrentlyDown;
    pros::Motor* ArmMain;
    PYROClaw claw;
    okapi::AsyncPosIntegratedController ArmPID;
    void resetPos();
    void goToPos(double degrees, bool hold = true); //1:3
-
+   void rotateCap(double deg);
    void teleop();
    PYROArm(int);
 } extern arm;
