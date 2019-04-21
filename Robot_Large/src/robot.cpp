@@ -33,9 +33,17 @@ void PYROChassis::teleop(ControllerMode mode, pros::Controller Cont)
 
 PYROChassis::PYROChassis(int a) :  MasterController(ChassisControllerFactory::create(
    MG_Drivetrain_Left, MG_Drivetrain_Right,
-   IterativePosPIDController::Gains{0.001, 0.0008, 0.0005},   //straight
-   IterativePosPIDController::Gains{0.01, 0.08, 0.00009},    //correct drift
-   IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},  //turn
+   //IterativePosPIDController::Gains{0.001, 0.0008, 0.0005},   //straight
+   //IterativePosPIDController::Gains{0.01, 0.08, 0.00009},    //correct drift
+   //IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},  //turn
+
+   IterativePosPIDController::Gains{0.00001, 0.00001, 0.000006},   //straight
+   IterativePosPIDController::Gains{0.000, 0.0, 0.0000},    //correct drift
+   IterativePosPIDController::Gains{0.00001, 0.0000001, 0.00000},  //turn
+
+   //IterativePosPIDController::Gains{0.05, 0.000, 0.000},   //straight
+   //IterativePosPIDController::Gains{0.0, 0.0, 0.0000},    //correct drift
+   //IterativePosPIDController::Gains{0.00, 0.00, 0.0000},  //turn
    ratio,
    {WHEEL_DIAMETER, CHASSIS_WIDTH}
  )), MotionController(AsyncControllerFactory::motionProfile(
@@ -153,12 +161,12 @@ void PYROIntake::teleop(pros::Controller Cont)
       runMainIntake(100);
       runPreFlywheel(100);
     }
-    else*/ if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L1))
+    else*/ if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
     {
       runMainIntake(100);
       runPreFlywheel(-100);
     }
-    else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
+    else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
     {
       runMainIntake(-100);
       runPreFlywheel(-100);
@@ -245,7 +253,7 @@ void PYROShooter::teleop(pros::Controller Cont)
     intake.shootBall(2);
     FlywheelPID.flipDisable(false);
   }*/
-  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
   {
     Cont.rumble(".");
     intake.MainIntakePID.flipDisable(false);
@@ -269,7 +277,7 @@ void PYROShooter::teleop(pros::Controller Cont)
 
     pros::lcd::print(7, "Shooting");
   }
-  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
   {
     Cont.rumble("- .");
     setHoodAngle(34);
@@ -343,6 +351,8 @@ PYROShooter shooter(0);
 PYROArm::PYROArm(int) : ArmPID(AsyncControllerFactory::posIntegrated(7)), claw(0)
 {
   ArmMain = &M_Arm_Main;
+  isFirstTime = true;
+  isCurrentlyDown = false;
   ArmMain->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   speed = 0;
   ArmPID.reset();
@@ -350,7 +360,7 @@ PYROArm::PYROArm(int) : ArmPID(AsyncControllerFactory::posIntegrated(7)), claw(0
 
 void PYROArm::resetPos()
 {
-  ArmMain -> tare_position(); 
+  ArmMain -> tare_position();
 }
 
 void PYROArm::goToPos(double degrees, bool hold)
@@ -362,10 +372,18 @@ void PYROArm::goToPos(double degrees, bool hold)
   ArmMain -> move_absolute(degrees, 120);
 }
 
+
 //int armMillisSince;
 
 void PYROArm::teleop()
 {
+  if(isFirstTime)
+  {
+    goToPos(-30);
+    resetPos();
+    isFirstTime = false;
+    isCurrentlyDown = true;
+  }
   claw.teleop(Controller_1);
   //pros::lcd::print(7,"%f", arm.ArmMain->get_position());
   /*
@@ -408,28 +426,29 @@ void PYROArm::teleop()
     //goToPos(0, 0);
     ArmPID.setTarget(0);
   }*/
-  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1) && false)
   {
     ArmPID.flipDisable(false);
-    //speed = 120;
-    //goToPos(70, 0);
-    ArmPID.setTarget(170); //3:1 Ratio
-    ArmPID.waitUntilSettled();
-    ArmPID.setTarget(0);
+    double target = ArmPID.getTarget();
+    goToPos(425);
+
   }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
   {
     ArmPID.flipDisable(false);
     double target = ArmPID.getTarget();
 
-    if(ArmMain->get_position() < 10)
+    if(isCurrentlyDown)
     {
       goToPos(425);
+      isCurrentlyDown = !isCurrentlyDown;
     }
-    else if(ArmMain->get_position() > 400)
+    else
     {
-      goToPos(-20);
+      goToPos(-25);
+      isCurrentlyDown = !isCurrentlyDown;
     }
+
 
     //if(target == 0)
       //ArmPID.setTarget(425);
@@ -444,6 +463,14 @@ void PYROArm::teleop()
     //else
       //ArmPID.setTarget(0);
   }
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
+  {
+    ArmPID.flipDisable(false);
+    goToPos(105);
+  }
+
+
+
 }
 
 PYROArm arm(0);
@@ -452,6 +479,8 @@ PYROArm arm(0);
 PYROClaw::PYROClaw(int)
 {
   ClawMain = &M_Claw_Main;
+  ClawRotate = &M_Claw_Rotate;
+  ClawRotate->tare_position();
 }
 
 void PYROClaw::runIntake(int signal, bool inward)
@@ -464,6 +493,11 @@ void PYROClaw::runIntake(int signal, bool inward)
   {
     ClawMain->move(-signal);
   }
+}
+
+void PYROClaw::rotate(double deg)
+{
+  ClawRotate->move_absolute(deg, 50);
 }
 
 
@@ -495,6 +529,17 @@ void PYROClaw::teleop(pros::Controller Cont)
       ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
       runIntake(-60);
     }
+
+    if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT))
+    {
+      if(ClawRotate->get_position() > -10)
+        rotate(-183);
+      else
+        rotate(0);
+    }
+
+
+
     /* //UNCOMMENT AND CHANGE NEW PRESS -> get_digital FOR HOLD INSTEAD OF TOGGLE
     else
     {
