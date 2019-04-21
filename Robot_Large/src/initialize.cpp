@@ -18,7 +18,7 @@ void initialize()
 	//styleInit();
 	//screenInit();//
 
-	arm.resetPos();
+	
 }
 
 /**
