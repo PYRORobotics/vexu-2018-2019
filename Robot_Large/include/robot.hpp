@@ -94,8 +94,10 @@ class PYROShooter
 
   public:
 
-    const double HOOD_MIN_ANGLE = 18;
+    const double HOOD_MIN_ANGLE = 14;
     const double HOOD_MAX_ANGLE = 54;
+    const double HIGH_FLAG_ANGLE = 32;
+    const double MID_FLAG_ANGLE = 14;
 
     okapi::AsyncVelPIDController FlywheelPID;
     void runFlywheel(int signal);
@@ -133,7 +135,8 @@ class PYROArm
  public:
    bool isFirstTime;
    bool isCurrentlyDown;
-   pros::Motor* ArmMain;
+   pros::Motor* ArmLeft;
+   pros::Motor* ArmRight;
    PYROClaw claw;
    okapi::AsyncPosIntegratedController ArmPID;
    void resetPos();
@@ -151,7 +154,9 @@ extern bool clawStartsExtended;
 //extern ADIDigitalOut P_Claw_Main;
 extern pros::Motor M_Claw_Main;
 extern pros::Motor M_Claw_Rotate;
-extern pros::Motor M_Arm_Main;
+extern pros::Motor M_Arm_Left;
+extern pros::Motor M_Arm_Right;
+
 
 /*
  * (Cap) Lift pros::Motors (M_Drivetrain)
