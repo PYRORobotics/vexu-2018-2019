@@ -253,7 +253,7 @@ void PYROShooter::teleop(pros::Controller Cont)
     intake.shootBall(2);
     FlywheelPID.flipDisable(false);
   }*/
-  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) //single shot
   {
     Cont.rumble(".");
     intake.MainIntakePID.flipDisable(false);
@@ -277,10 +277,10 @@ void PYROShooter::teleop(pros::Controller Cont)
 
     pros::lcd::print(7, "Shooting");
   }
-  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))  //double shot
   {
     Cont.rumble("- .");
-    setHoodAngle(34);
+    setHoodAngle(HIGH_FLAG_ANGLE);
     intake.MainIntakePID.flipDisable(false);
     intake.PreFlywheelIntakePID.flipDisable(false);
     //intake.MainIntakePID.reset();
@@ -296,7 +296,7 @@ void PYROShooter::teleop(pros::Controller Cont)
     intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
     intake.PreFlywheelIntakePID.waitUntilSettled();
 
-    setHoodAngle(23);
+    setHoodAngle(MID_FLAG_ANGLE);
     FlywheelPID.controllerSet(1);
     intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
     intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
@@ -315,13 +315,13 @@ void PYROShooter::teleop(pros::Controller Cont)
   }
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
-    setHoodAngle(34);
+    setHoodAngle(HIGH_FLAG_ANGLE);
     Cont.rumble(". -");
     Controller_1.rumble(". -");
   }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
   {
-    setHoodAngle(23);
+    setHoodAngle(MID_FLAG_ANGLE);
     Cont.rumble(". .");
     Controller_1.rumble(". .");
   }
@@ -348,28 +348,38 @@ PYROShooter shooter(0);
  * Cap Intake (Claw) Motors and Pneumatics (Actuators) (M_Claw and P_Claw)
  */
 
-PYROArm::PYROArm(int) : ArmPID(AsyncControllerFactory::posIntegrated(7)), claw(0)
+PYROArm::PYROArm(int) : ArmPID(AsyncControllerFactory::posIntegrated(-6,7)), claw(0)
 {
-  ArmMain = &M_Arm_Main;
+  ArmLeft = &M_Arm_Left;
+  ArmRight = &M_Arm_Right;
   isFirstTime = true;
   isCurrentlyDown = false;
-  ArmMain->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  //ArmLeft->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  //ArmRight->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   speed = 0;
   ArmPID.reset();
 }
 
 void PYROArm::resetPos()
 {
-  ArmMain -> tare_position();
+  ArmLeft -> tare_position();
+  ArmRight -> tare_position();
 }
 
 void PYROArm::goToPos(double degrees, bool hold)
 {
   if(hold)
-    ArmMain -> set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  {
+    ArmLeft -> set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ArmRight -> set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  }
   else
-    ArmMain -> set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-  ArmMain -> move_absolute(degrees, 120);
+  {
+    ArmLeft -> set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+    ArmRight -> set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+  }
+  ArmLeft -> move_absolute(degrees, 120);
+  ArmRight -> move_absolute(degrees, 120);
 }
 
 
@@ -377,55 +387,20 @@ void PYROArm::goToPos(double degrees, bool hold)
 
 void PYROArm::teleop()
 {
-  if(isFirstTime)
+  if(isFirstTime) //initialize arm and also trying hood
   {
     goToPos(-30);
+    //HoodMotor->move_absolute((HOOD_MAX_ANGLE - HOOD_MIN_ANGLE)*201/14, 50);
+    pros::delay(500);
     resetPos();
+    //HoodMotor->tare_position();
+    goToPos(105, false);
+    //setHoodAngle(HIGH_FLAG_ANGLE);
     isFirstTime = false;
     isCurrentlyDown = true;
   }
   claw.teleop(Controller_1);
-  //pros::lcd::print(7,"%f", arm.ArmMain->get_position());
-  /*
-  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
-  {
-    speed = 90;
-    goToPos(0, 0);
-  }
-  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
-  {
-    speed = 30;
-    goToPos(50);
-  }*/
-  /*if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
-  {
-    speed = 127;
-    if(ArmMain->get_position() > 10)
-    {
-      goToPos(0, 0);
-      armMillisSince = pros::millis();
-      while(pros::millis() < 500 + armMillisSince)
-      {
-        pros::lcd::print(6, "%d", pros::millis());
-        pros::lcd::print(7, "%d", 500 + armMillisSince);
-      }
-    }
-    goToPos(72, 0);
-    armMillisSince = pros::millis();
-    while(pros::millis() < 500 + armMillisSince)
-    {
-      pros::lcd::print(6, "%d", pros::millis());
-      pros::lcd::print(7, "%d", 500 + armMillisSince);
-    }
-    speed = 30;
-    goToPos(0, 0);
-  }*/
-  /*if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
-  {
-    //speed = 30;
-    //goToPos(0, 0);
-    ArmPID.setTarget(0);
-  }*/
+
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1) && false)
   {
     ArmPID.flipDisable(false);
@@ -440,12 +415,12 @@ void PYROArm::teleop()
 
     if(isCurrentlyDown)
     {
-      goToPos(425);
+      goToPos(450, true);
       isCurrentlyDown = !isCurrentlyDown;
     }
     else
     {
-      goToPos(-25);
+      goToPos(0, true);
       isCurrentlyDown = !isCurrentlyDown;
     }
 
@@ -466,7 +441,7 @@ void PYROArm::teleop()
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
   {
     ArmPID.flipDisable(false);
-    goToPos(105);
+    goToPos(105, true);
   }
 
 
@@ -506,6 +481,7 @@ int torquei = 0;
 double averageTorque = 0;
 void PYROClaw::teleop(pros::Controller Cont)
 {
+  ClawRotate->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
   lastTorques[torquei] = ClawMain->get_torque();
   averageTorque = 0;
   for(int i = 0; i < 100; i++)
@@ -564,7 +540,8 @@ pros::Motor M_Claw_Main(16,pros::E_MOTOR_GEARSET_36,clawIsReversed,pros::E_MOTOR
 
 /* Claw Rotation (Cap flip) Motor */
 pros::Motor M_Claw_Rotate(17,pros::E_MOTOR_GEARSET_36,!clawIsReversed,pros::E_MOTOR_ENCODER_DEGREES);
-pros::Motor M_Arm_Main(7, pros::E_MOTOR_GEARSET_36, true, pros::E_MOTOR_ENCODER_DEGREES);
+pros::Motor M_Arm_Left(6, pros::E_MOTOR_GEARSET_36, false, pros::E_MOTOR_ENCODER_DEGREES);
+pros::Motor M_Arm_Right(7, pros::E_MOTOR_GEARSET_36, true, pros::E_MOTOR_ENCODER_DEGREES);
 
 /*
  * (Cap) Lift Motors (M_Drivetrain)
