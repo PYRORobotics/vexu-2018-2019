@@ -39,7 +39,7 @@ PYROChassis::PYROChassis(int a) :  MasterController(ChassisControllerFactory::cr
 
    IterativePosPIDController::Gains{0.00001, 0.00001, 0.000006},   //straight
    IterativePosPIDController::Gains{0.000, 0.0, 0.0000},    //correct drift
-   IterativePosPIDController::Gains{0.00001, 0.0000001, 0.00000},  //turn
+   IterativePosPIDController::Gains{0.001, 0.00001, 0.00000},  //turn
 
    //IterativePosPIDController::Gains{0.05, 0.000, 0.000},   //straight
    //IterativePosPIDController::Gains{0.0, 0.0, 0.0000},    //correct drift
