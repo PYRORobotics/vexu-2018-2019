@@ -7,19 +7,11 @@ int autonomousIDNum = 0;
 void autonomousRed1()
 {
   //CW = (+), CCW, = (-) for turning
-  shooter.FlywheelPID.flipDisable(true);
-  arm.resetPos();
-  HoodMotor->tare_position();
+  //shooter.FlywheelPID.flipDisable(false);
+  //arm.resetPos();
 
-  //intake.runMainIntake(100);    //Power on ball collector
-  //intake.runPreFlywheel(-100);   //Power on ball collector
-  HoodMotor->move_absolute((HOOD_MAX_ANGLE - 34)*201/14, 50);
-  pros::delay(1000);
-  HoodMotor->move_absolute((HOOD_MAX_ANGLE - 23)*201/14, 50);
-  pros::delay(99999999);
+  //pros::delay(99999999);
 
-
-  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{45_in,0_in,0_deg}}, "1f");
 
   shooter.FlywheelPID.flipDisable(true);
   arm.resetPos();
@@ -27,6 +19,7 @@ void autonomousRed1()
   intake.runMainIntake(100);    //Power on ball collector
   intake.runPreFlywheel(-100);   //Power on ball collector
 
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{45_in,0_in,0_deg}}, "1f");
   chassis.MotionController.setTarget("1f", false);  //Drive forward into ball under cap
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{15_in,-3_in,0_deg}}, "2b");
   chassis.MotionController.waitUntilSettled();
@@ -37,7 +30,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
   pros::delay(500);
 
-  chassis.MasterController.turnAngle(-133.5_deg); //Turn to have cap intake face lower cap
+  chassis.MasterController.turnAngle(-133_deg); //Turn to have cap intake face lower cap
   arm.goToPos(-30, true);                        //Lower arm to lower limit
   chassis.MasterController.waitUntilSettled();
   pros::delay(500);
@@ -50,7 +43,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("4f", false);  //Drive forward to bring bottom cap to side post
-  arm.goToPos(140, true);
+  arm.goToPos(145, true);
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{15_in,0_in,0_deg}}, "5b");
   chassis.MotionController.waitUntilSettled();
 
@@ -58,8 +51,9 @@ void autonomousRed1()
   pros::delay(1000);
   chassis.MasterController.stop();
 
-  //SCORE FIRST CAP
-  arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  //SCORE ONLY ONE CAP
+  arm.ArmLeft->move_absolute(450, 600);           //Place cap on side post
+  arm.ArmRight->move_absolute(450, 600);           //Place cap on side post
   pros::delay(3000);
 
   chassis.MotionController.setTarget("5b", true); //Drive backward to cross-court area
@@ -69,6 +63,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("6b", true); //Drive backward and turn and front face alliance platform
+  arm.goToPos(0, true);                         //Keep arm down to lower limit
   arm.claw.runIntake(0, true);                    //Stop cap intake
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{20_in,0_in,0_deg}}, "7f");
   chassis.MotionController.waitUntilSettled();
@@ -79,9 +74,8 @@ void autonomousRed1()
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{10_in,6.5_in,33_deg}}, "8b");
   chassis.MotionController.waitUntilSettled();
 
-  chassis.MasterController.driveVector(0.3, 0);
-  arm.goToPos(0, true);                         //Keep arm down to lower limit
-  pros::delay(1500);
+  chassis.MasterController.driveVector(0.1, 0);
+  pros::delay(2000);
   chassis.MasterController.stop();
 
   chassis.MotionController.setTarget("8b", true);
@@ -90,6 +84,39 @@ void autonomousRed1()
 
   chassis.MotionController.setTarget("9f", false);
   chassis.MotionController.waitUntilSettled();
+
+  //SHOOTING SEQUENCE
+  shooter.setHoodAngle(28); //28 hit 1
+  shooter.FlywheelPID.flipDisable(false);
+  intake.MainIntakePID.flipDisable(false);
+  intake.PreFlywheelIntakePID.flipDisable(false);
+  //intake.MainIntakePID.reset();
+  //intake.PreFlywheelIntakePID.reset();
+  shooter.FlywheelPID.flipDisable(false);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(10000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-10000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(82);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(200 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+
+  shooter.setHoodAngle(20); //20
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(15000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-15000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(82);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+  shooter.runFlywheel(0);
+  intake.MainIntakePID.flipDisable(true);
+  intake.PreFlywheelIntakePID.flipDisable(true);
+  shooter.FlywheelPID.flipDisable(true);
 
   pros::delay(99999999);
 
@@ -151,7 +178,9 @@ void autonomousRed1()
   chassis.MasterController.stop();
 
   //SCORE FIRST CAP
-  arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  //arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  arm.goToPos(450, true);
+
   pros::delay(3000);
 
   chassis.MotionController.setTarget("6b", true); //Drive backward to be clear of obstacles
@@ -177,7 +206,8 @@ void autonomousRed1()
   chassis.MasterController.stop();
 
   //SCORE SECOND CAP
-  arm.ArmMain->move_absolute(425, 600);           //Place cap on bottom post
+  //arm.ArmMain->move_absolute(425, 600);           //Place cap on bottom post
+  arm.goToPos(450, true);
   pros::delay(3000);
 
   chassis.MotionController.setTarget("9b", true); //Drive forward into bottom post
@@ -227,7 +257,8 @@ void autonomousRed1()
   chassis.MasterController.waitUntilSettled();
 
   std::cout << "At 1, going to 2\n";
-  arm.ArmMain->move_absolute(425, 600);  //Raise arm out of the way
+  //arm.ArmMain->move_absolute(425, 600);  //Raise arm out of the way
+  arm.goToPos(450, true);
   chassis.MasterController.moveDistance(-30_in);  //Drive backward to inner edge of starting tile
   chassis.MasterController.waitUntilSettled();
   std::cout << "At 2, turning to 3\n";
@@ -258,7 +289,8 @@ void autonomousRed1()
   chassis.MasterController.moveDistance(25_in); //Drive forward into side post (ram align)
   chassis.MasterController.waitUntilSettled();
 
-  arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  //arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  arm.goToPos(450, true);
   pros::delay(5000);
 
   arm.claw.runIntake(100, false);                 //Reverse cap intake
@@ -284,7 +316,8 @@ void autonomousRed1()
   chassis.MasterController.moveDistance(-30_in);  //Drive backward into upper cap
   chassis.MasterController.waitUntilSettled();
 
-  arm.ArmMain->move_absolute(425, 600);           //Raise cap above robot
+  //arm.ArmMain->move_absolute(425, 600);           //Raise cap above robot
+  arm.goToPos(450, true);
   chassis.MasterController.moveDistance(40_in);  //Drive forward to align with bottom post
   chassis.MasterController.waitUntilSettled();
 
@@ -295,7 +328,8 @@ void autonomousRed1()
   chassis.MasterController.moveDistance(24_in);  //Drive forward into bottom post (ram align)
   chassis.MasterController.waitUntilSettled();
 
-  arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  //arm.ArmMain->move_absolute(425, 600);           //Place cap on side post
+  arm.goToPos(450, true);
   pros::delay(5000);
 
   arm.claw.runIntake(100, false);                 //Reverse cap intake
