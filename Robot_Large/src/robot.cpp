@@ -227,32 +227,7 @@ void PYROShooter::runFlywheel(int rpm)
 int flywheelMillisSince;
 
 void PYROShooter::teleop(pros::Controller Cont)
-{/*
-  runFlywheel(500);
-  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
-  {
-    FlywheelPID.flipDisable(true);
-    flywheelMillisSince = pros::millis();
-    while(pros::millis() < 2000 + flywheelMillisSince)
-    {
-      pros::lcd::print(6, "%d", pros::millis());
-      pros::lcd::print(7, "%d", 500 + flywheelMillisSince);
-    }
-    intake.shootBall(1);
-    FlywheelPID.flipDisable(false);
-  }
-  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-  {
-    FlywheelPID.flipDisable(true);
-    flywheelMillisSince = pros::millis();
-    while(pros::millis() < 2000 + flywheelMillisSince)
-    {
-      pros::lcd::print(6, "%d", pros::millis());
-      pros::lcd::print(7, "%d", 500 + flywheelMillisSince);
-    }
-    intake.shootBall(2);
-    FlywheelPID.flipDisable(false);
-  }*/
+{
   if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) //single shot
   {
     Cont.rumble(".");
@@ -316,14 +291,14 @@ void PYROShooter::teleop(pros::Controller Cont)
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
     setHoodAngle(HIGH_FLAG_ANGLE);
-    Cont.rumble(". -");
-    Controller_1.rumble(". -");
+    Cont.rumble(". . .");
+    Controller_1.rumble(". . .");
   }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
   {
     setHoodAngle(MID_FLAG_ANGLE);
-    Cont.rumble(". .");
-    Controller_1.rumble(". .");
+    Cont.rumble("- - -");
+    Controller_1.rumble("- - -");
   }
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
   {
@@ -335,7 +310,6 @@ void PYROShooter::teleop(pros::Controller Cont)
     FlywheelPID.controllerSet(0);
     FlywheelPID.flipDisable(true);
   }
-
 }
 
 /*void PYROShooter::teleopTask(void*)
@@ -387,65 +361,48 @@ void PYROArm::goToPos(double degrees, bool hold)
 
 void PYROArm::teleop()
 {
-  if(isFirstTime) //initialize arm and also trying hood
-  {
-    goToPos(-30);
-    //HoodMotor->move_absolute((HOOD_MAX_ANGLE - HOOD_MIN_ANGLE)*201/14, 50);
-    pros::delay(500);
-    resetPos();
-    //HoodMotor->tare_position();
-    goToPos(105, false);
-    //setHoodAngle(HIGH_FLAG_ANGLE);
-    isFirstTime = false;
-    isCurrentlyDown = true;
-  }
+  // if(isFirstTime) //initialize arm and also trying hood
+  // {
+  //   goToPos(-30);
+  //   //HoodMotor->move_absolute((HOOD_MAX_ANGLE - HOOD_MIN_ANGLE)*201/14, 50);
+  //   pros::delay(500);
+  //   resetPos();
+  //   //HoodMotor->tare_position();
+  //   goToPos(105, false);
+  //   //setHoodAngle(HIGH_FLAG_ANGLE);
+  //   isFirstTime = false;
+  //   isCurrentlyDown = false;
+  // }
   claw.teleop(Controller_1);
 
-  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1) && false)
+  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
   {
     ArmPID.flipDisable(false);
     double target = ArmPID.getTarget();
-    goToPos(425);
-
+    goToPos(450, true);
+    isCurrentlyDown = true;
   }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
   {
     ArmPID.flipDisable(false);
     double target = ArmPID.getTarget();
-
-    if(isCurrentlyDown)
+    goToPos(4, true);
+    isCurrentlyDown = true;
+  }
+  else if(Controller_0.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
+  {
+    ArmPID.flipDisable(false);
+    if (isCurrentlyDown)
     {
-      goToPos(450, true);
+      goToPos(105, true);
       isCurrentlyDown = !isCurrentlyDown;
     }
     else
     {
-      goToPos(0, true);
+      goToPos(4, true);
       isCurrentlyDown = !isCurrentlyDown;
     }
-
-
-    //if(target == 0)
-      //ArmPID.setTarget(425);
-      /*
-    else if(target == 80)
-    {
-      ArmPID.setTarget(97);
-      ArmPID.waitUntilSettled();
-      pros::delay(500);
-      ArmPID.flipDisable(true);
-    }*/
-    //else
-      //ArmPID.setTarget(0);
   }
-  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
-  {
-    ArmPID.flipDisable(false);
-    goToPos(105, true);
-  }
-
-
-
 }
 
 PYROArm arm(0);
@@ -509,7 +466,7 @@ void PYROClaw::teleop(pros::Controller Cont)
     if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT))
     {
       if(ClawRotate->get_position() > -10)
-        rotate(-183);
+        rotate(-181);
       else
         rotate(0);
     }
