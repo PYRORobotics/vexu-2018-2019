@@ -2,6 +2,7 @@
 
 extern double HEADING_RAW;
 extern double HEADING_ADJUSTED;
+extern double HEADING_FROM_CAMERA;
 extern double ax;
 extern double ay;
 extern double az;

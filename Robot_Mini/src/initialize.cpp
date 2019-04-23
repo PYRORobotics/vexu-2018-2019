@@ -15,6 +15,56 @@ void printSerialTaskfn(void*)
 	}
 }
 
+void telemetryTaskfn(void*)
+{
+	while(1)
+	{
+		pros::Motor LF(1, pros::E_MOTOR_GEARSET_18, 1, pros::E_MOTOR_ENCODER_DEGREES);
+		pros::Motor LM(2, pros::E_MOTOR_GEARSET_18, 0, pros::E_MOTOR_ENCODER_DEGREES);
+		pros::Motor LR(3, pros::E_MOTOR_GEARSET_18, 1, pros::E_MOTOR_ENCODER_DEGREES);
+		pros::Motor RF(8, pros::E_MOTOR_GEARSET_18, 0, pros::E_MOTOR_ENCODER_DEGREES);
+		pros::Motor RM(9, pros::E_MOTOR_GEARSET_18, 1, pros::E_MOTOR_ENCODER_DEGREES);
+		pros::Motor RR(10, pros::E_MOTOR_GEARSET_18, 0, pros::E_MOTOR_ENCODER_DEGREES);
+
+
+
+		double ECLF = LF.get_position();
+		double ECLM = LM.get_position();
+		double ECLR = LR.get_position();
+		double ECRF = RF.get_position();
+		double ECRM = RM.get_position();
+		double ECRR = RR.get_position();
+
+		double wheelbase = (12.007 + 11.4173)/2;
+
+		double headingViaEncoders = (-ECLM + ECRM)/wheelbase;// / (2 * PI);
+		PYROChassis::heading = headingViaEncoders;
+		PYROChassis::ECL = ECLM;
+		PYROChassis::ECR = ECRM;
+
+		double dist = (-ECLM - ECRM)/2;
+		double x = dist * sinf(PYROChassis::heading * PI/180);
+		double y = dist * cosf(PYROChassis::heading * PI/180);
+
+		PYROChassis::x += x;
+		PYROChassis::y += y;
+
+		//pros::lcd::print(1, "Heading: %f", PYROChassis::heading);
+		//pros::lcd::print(2, "x: %f", PYROChassis::x);
+		//pros::lcd::print(3, "y: %f", PYROChassis::y);
+
+
+		LF.~Motor();
+		LM.~Motor();
+		LR.~Motor();
+		RF.~Motor();
+		RM.~Motor();
+		RR.~Motor();
+
+		pros::delay(2);
+	}
+}
+
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -31,9 +81,11 @@ void initialize()
 	//styleInit();
 	//screenInit();//
 
-	arm.resetPos();
+	//arm.resetPos();
+	chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{35_in,0_in,0_deg}}, "1");
 
 	pros::Task printSerialTask(printSerialTaskfn, 0);
+	//pros::Task telemetryTask(telemetryTaskfn, 0);
 }
 
 /**
@@ -58,4 +110,9 @@ void disabled()
 void competition_initialize()
 {
 	//screenCompetitionInit();
+	while(1)
+	{
+		std::cout << "BLUE" << "\n";
+		pros::delay(20);
+	}
 }

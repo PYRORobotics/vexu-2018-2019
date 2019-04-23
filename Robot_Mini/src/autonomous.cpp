@@ -87,11 +87,13 @@ void autonomousOLD()
   {
     std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
     autonomousRed1();
+    std::cout << "RED" << "\n";
   }
   else if(autonomousIDNum == 1)
   {
     std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
     //m.set_value(-100);
+    std::cout << "BLUE" << "\n";
   }
   //std::cout << i++ << "\n";
   pros::delay(10);
@@ -104,5 +106,6 @@ void autonomousOLD()
 
 void autonomous()
 {
+  //std::cout << "RED" << "\n";
   autonomousRed1();
 }

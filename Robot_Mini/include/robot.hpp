@@ -16,13 +16,19 @@ using namespace okapi;
 class PYROChassis
 {
  private:
-   const okapi::MotorGroup MG_Drivetrain_Left = {1,-2,3};
-   const okapi::MotorGroup MG_Drivetrain_Right = {-8,9,-10};
+
    const okapi::QLength WHEEL_DIAMETER = 3.95_in;
    const okapi::QLength CHASSIS_WIDTH = 12.25_in;
    const okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
    //double yaw;
  public:
+   const okapi::MotorGroup MG_Drivetrain_Left = {1,-2,3};
+   const okapi::MotorGroup MG_Drivetrain_Right = {-8,9,-10};
+   static double heading;
+   static double x;
+   static double y;
+   static double ECL;
+   static double ECR;
    ChassisControllerPID MasterController;// = ChassisControllerFactory::create(
       //MG_Drivetrain_Left, MG_Drivetrain_Right,
       //IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},

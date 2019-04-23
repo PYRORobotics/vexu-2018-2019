@@ -31,46 +31,52 @@ void PYROChassis::teleop(ControllerMode mode, pros::Controller Cont)
   }
 }
 
+double PYROChassis::heading = 0;
+double PYROChassis::x = 0;
+double PYROChassis::y = 0;
+double PYROChassis::ECL = 0;
+double PYROChassis::ECR = 0;
+
 PYROChassis::PYROChassis(int a) :  MasterController(ChassisControllerFactory::create(
    MG_Drivetrain_Left, MG_Drivetrain_Right,
-   IterativePosPIDController::Gains{0.001, 0.0008, 0.0005},
-   IterativePosPIDController::Gains{0.006, 0.005, 0.00008},
-   IterativePosPIDController::Gains{0.0045, 0.005, 0.00008},
+   IterativePosPIDController::Gains{0.0005, 0.000, 0.00005}, //0.00001
+   IterativePosPIDController::Gains{0.0001, 0.002, 0.00008},
+   IterativePosPIDController::Gains{0.001, 0.001, 0.0001},
    ratio,
    {WHEEL_DIAMETER, CHASSIS_WIDTH}
  )), MotionController(AsyncControllerFactory::motionProfile(
    10.0,  // Maximum linear velocity of the Chassis in m/s
-   0.5,  // Maximum linear acceleration of the Chassis in m/s/s
-   10.0, // Maximum linear jerk of the Chassis in m/s/s/s
+   0.8,  // Maximum linear acceleration of the Chassis in m/s/s
+   5.0, // Maximum linear jerk of the Chassis in m/s/s/s
    PYROChassis::MasterController // Chassis Controller
  ))
 {
 
 }
-
+/* //OLD TURN WITH IMU
 double PYROChassis::turn(double degrees)
 {
   MasterController.setBrakeMode(AbstractMotor::brakeMode::brake);
   while(1)
   {
     double error = degrees - HEADING_ADJUSTED;
-    if(fabs(error) > 8)
+    if(fabs(error) > 10)
     {
-      MasterController.right(-(degrees - HEADING_ADJUSTED) / 180 * 0.6);
-      MasterController.left((degrees - HEADING_ADJUSTED) / 180 * 0.6);
+      MasterController.right(-(degrees - HEADING_ADJUSTED) / 180 * 0.3);
+      MasterController.left((degrees - HEADING_ADJUSTED) / 180 * 0.3);
     }
     else if(error > 0)
     {
-      MasterController.right(-0.015);
-      MasterController.left(0.015);
+      MasterController.right(-0.01);
+      MasterController.left(0.01);
     }
     else
     {
-      MasterController.right(0.015);
-      MasterController.left(-0.015);
+      MasterController.right(0.01);
+      MasterController.left(-0.01);
     }
 
-    if(fabs(error) < 0.1)
+    if(fabs(error) < 0.5)
     {
       MasterController.right(0);
       MasterController.left(0);
@@ -81,7 +87,72 @@ double PYROChassis::turn(double degrees)
     pros::delay(20);
   }
     return 1;
+}*/
+
+double PYROChassis::turn(double degrees)
+{
+  MasterController.setBrakeMode(AbstractMotor::brakeMode::brake);
+  while(1)
+  {
+    MasterController.setVelPID(0, 0.1, 0.001, 0);
+    int signMultiplier = 0;
+    //pros::delay(500);
+    double error = degrees - HEADING_FROM_CAMERA;
+    pros::lcd::print(1, "Error: %f", error);
+    if(fabs(error) <= 0.5)
+      break;
+    else if(fabs(error) > 360)
+      pros::delay(20);
+    else
+    {
+
+      if(error > 0)
+      {
+        signMultiplier = -1;
+      }
+      else
+      {
+        signMultiplier = 1;
+      }
+      /*
+      if(fabs(error) > 10)
+      {
+        MasterController.right(-0.2 * signMultiplier);
+        MasterController.left(0.2 * signMultiplier);
+      }
+      else if(fabs(error) > 1.5)
+      {
+        MasterController.right(-0.175 * signMultiplier);
+        MasterController.left(0.175 * signMultiplier);
+      }
+      else if(fabs(error) > 0.5)
+      {
+        MasterController.right(0.15 * signMultiplier);
+        MasterController.left(-0.15 * signMultiplier);
+      }
+
+      if(fabs(error) <= 0.5)
+      {
+        MasterController.right(0);
+        MasterController.left(0);
+        MasterController.stop();
+        MasterController.waitUntilSettled();
+        break;
+      }
+      //pros::delay(20);*/
+
+
+      //MasterController.turnAngleAsync(signMultiplier*0.3_deg);
+      if(fabs(error) > 8)
+        MasterController.rotate(error/400);
+      else
+        MasterController.rotate(error/250);
+      pros::delay(20);
+    }
+  }
+    return 1;
 }
+
 
 //double PYROChassis::getYaw()
 //{
@@ -209,7 +280,7 @@ PYROShooter::PYROShooter(int) : FlywheelPID(AsyncControllerFactory::velPID(
 void PYROShooter::setHoodAngle(double angle)
 {
   if(angle >= HOOD_MIN_ANGLE && angle <= HOOD_MAX_ANGLE)
-    HoodMotor->move_absolute((HOOD_MAX_ANGLE - angle)*201/14, 50); //FIXME Test and Increase speed?
+    HoodMotor->move_absolute((HOOD_MAX_ANGLE - angle)*201/14, 110); //FIXME Test and Increase speed?
 }
 
 void PYROShooter::runFlywheel(int rpm)
@@ -249,7 +320,7 @@ void PYROShooter::teleop(pros::Controller Cont)
   }*/
   if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
-    Cont.rumble(".");
+    //Cont.rumble(".");
     intake.MainIntakePID.flipDisable(false);
     intake.PreFlywheelIntakePID.flipDisable(false);
     //intake.MainIntakePID.reset();
@@ -273,8 +344,8 @@ void PYROShooter::teleop(pros::Controller Cont)
   }
   else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
   {
-    Cont.rumble("- .");
-    setHoodAngle(34);
+    //Cont.rumble("- .");
+    setHoodAngle(37);
     intake.MainIntakePID.flipDisable(false);
     intake.PreFlywheelIntakePID.flipDisable(false);
     //intake.MainIntakePID.reset();
@@ -292,13 +363,13 @@ void PYROShooter::teleop(pros::Controller Cont)
 
     setHoodAngle(23);
     FlywheelPID.controllerSet(1);
-    intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+    intake.MainIntakePID.setTarget(180 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(-180 + M_Intake_Preflywheel.get_position());
     runFlywheel(87);
     pros::delay(500);
     FlywheelPID.waitUntilSettled();
-    intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
+    intake.MainIntakePID.setTarget(800 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(800 + M_Intake_Preflywheel.get_position());
     intake.PreFlywheelIntakePID.waitUntilSettled();
     runFlywheel(0);
     intake.MainIntakePID.flipDisable(true);
@@ -309,15 +380,15 @@ void PYROShooter::teleop(pros::Controller Cont)
   }
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
-    setHoodAngle(34);
-    Cont.rumble(". -");
-    Controller_1.rumble(". -");
+    setHoodAngle(37);
+    //Cont.rumble(". -");
+    //Controller_1.rumble(". -");
   }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
   {
     setHoodAngle(23);
-    Cont.rumble(". .");
-    Controller_1.rumble(". .");
+    //Cont.rumble(". .");
+    //Controller_1.rumble(". .");
   }
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
   {

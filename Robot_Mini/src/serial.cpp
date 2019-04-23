@@ -11,6 +11,7 @@
 
 double HEADING_RAW = 0;
 double HEADING_ADJUSTED = 0;
+double HEADING_FROM_CAMERA = 0;
 double ax = 0;
 double ay = 0;
 double az = 0;
@@ -93,6 +94,8 @@ void serialRead(void* a)
       lastUpdateTime = pros::millis();
     }
 
+    HEADING_FROM_CAMERA = HEADING_RAW;
+
     if(HEADING_RAW > 180)
       HEADING_ADJUSTED = HEADING_RAW - 360;
     else
@@ -116,13 +119,14 @@ void serialWrite(void* a) // TODO: Does not work yet
   }
 	else
   {
-    //pros::lcd::print(6, "Serial Stream Opened");
+    pros::lcd::print(6, "Serial Stream Opened");
     //pros::lcd::print(6, serialCharArray);
-    fputs(serialCharArray, serialPort);
+    ////fprintf(serialPort, "RESET\n");
     //fprintf(serialPort, "RESET\n");
+    pros::lcd::print(6, "Serial Stream Done");
     //printf("Should have sent: RESET\ n");
   }
-	fflush(serialPort);
+	//fflush(serialPort);
 
   pros::delay(20);
 

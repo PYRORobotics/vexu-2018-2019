@@ -13,14 +13,46 @@ void printSerial()
 	//std::cout << "Heading: " << heading << "\n";
 }
 
+double startTime = 999999;
 
+void rumbleTask(void*)
+{
+	while(!pros::competition::is_disabled())
+	{
+		if(pros::millis() - startTime >= 70000) // 5 sec left
+		{
+			if(pros::millis()%1000 <= 20)
+			{
+				Controller_0.rumble("...");
+				Controller_1.rumble("...");
+			}
+		}
+		else if(pros::millis() - startTime >= 60000) // 15 sec left
+		{
+			if(pros::millis()%1000 <= 20)
+			{
+				Controller_0.rumble(".. ");
+				Controller_1.rumble(".. ");
+			}
+		}
+		else if(pros::millis() - startTime >= 45000) // 30 sec left
+		{
+			if(pros::millis()%1000 <= 20)
+			{
+				Controller_0.rumble(". ");
+				Controller_1.rumble(". ");
+			}
+		}
+		pros::delay(5);
+	}
+}
 
 void shooterTask(void*)
 {
 	while(1)
 	{
 		shooter.teleop();
-		pros::delay(5);
+		pros::delay(20);
 	}
 }
 void armTask(void*)
@@ -28,7 +60,7 @@ void armTask(void*)
 	while(1)
 	{
 		arm.teleop();
-		pros::delay(5);
+		pros::delay(20);
 	}
 }
 
@@ -47,8 +79,10 @@ void armTask(void*)
  */
 void opcontrol()
 {
+	startTime = pros::millis();
 	pros::Task shooterTeleopTask(shooterTask, NULL);
 	pros::Task armTeleopTask(armTask, NULL);
+	pros::Task rumbleTeleopTask(rumbleTask, NULL);
 	//chassis.MasterController.stop();
 /*
 	// SET UP SCREEN //
@@ -196,8 +230,15 @@ void opcontrol()
 		//M_Lift_L = -HEADING_ADJUSTED;
 
 
-		pros::lcd::print(4, "ms since last update: %f", msSinceLastUpdate);
-		pros::lcd::print(5, "last ID: %d", lastID);
+		//pros::lcd::print(4, "ms since last update: %f", msSinceLastUpdate);
+		//pros::lcd::print(5, "last ID: %d", lastID);
+
+		//serialWrite(0);
+
+		if(Controller_0.get_digital(pros::E_CONTROLLER_DIGITAL_A))
+			std::cout << "RED\n";
+		else if(Controller_0.get_digital(pros::E_CONTROLLER_DIGITAL_B))
+			std::cout << "BLUE\n";
 
 		pros::delay(20);
 	}
