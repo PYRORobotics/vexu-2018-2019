@@ -29,7 +29,7 @@ void printSerialTaskfn(void*)
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomousOLD()
+void autonomous()
 {//int i = 0;
   //pros::ADIMotor m('A');
 	//pros::Task printSerialTask(printSerialTaskfn, 0);
@@ -81,7 +81,7 @@ void autonomousOLD()
   //chassis.MasterController.setMaxVoltage(500);
 
 //  while(1)
-  {
+  
   //printf();
   if(autonomousIDNum == 0)
   {
@@ -92,20 +92,13 @@ void autonomousOLD()
   else if(autonomousIDNum == 1)
   {
     std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
-    //m.set_value(-100);
+    autonomousBlue1();
     std::cout << "BLUE" << "\n";
   }
   //std::cout << i++ << "\n";
-  pros::delay(10);
-}
+
 
 
   //autonomousRed1();
 
-}
-
-void autonomous()
-{
-  //std::cout << "RED" << "\n";
-  autonomousBlue1();
 }

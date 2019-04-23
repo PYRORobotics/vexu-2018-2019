@@ -74,12 +74,12 @@ void telemetryTaskfn(void*)
 void initialize()
 {
 
-	pros::lcd::initialize();
+	//pros::lcd::initialize();
 	//pros::lcd::set_text(1, "Hello PROS User!");
 	serialInit();
 
-	//styleInit();
-	//screenInit();//
+	styleInit();
+	screenInit();//
 
 	//arm.resetPos();
 	chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{35_in,0_in,0_deg}}, "1");
@@ -95,7 +95,11 @@ void initialize()
  */
 void disabled()
 {
-	//chassis.MasterController.stop();
+	chassis.MasterController.stop();
+	intake.MainIntakePID.flipDisable(true);
+	intake.PreFlywheelIntakePID.flipDisable(true);
+	shooter.FlywheelPID.flipDisable(true);
+	arm.ArmPID.flipDisable(true);
 }
 
 /**

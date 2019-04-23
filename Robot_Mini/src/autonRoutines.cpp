@@ -167,7 +167,7 @@ void autonomousRed1()
   chassis.MotionController.setTarget("11", false); //default false (straight)
   chassis.MotionController.waitUntilSettled();
 
-  chassis.MasterController.turnAngle(-86_deg);
+  chassis.MasterController.turnAngle(-84_deg);
   chassis.MasterController.waitUntilSettled();
   chassis.MasterController.stop();
 
@@ -367,7 +367,7 @@ void autonomousBlue1()
   chassis.MotionController.setTarget("11", false); //default false (straight)
   chassis.MotionController.waitUntilSettled();
 
-  chassis.MasterController.turnAngle(86_deg);
+  chassis.MasterController.turnAngle(84_deg);
   chassis.MasterController.waitUntilSettled();
   chassis.MasterController.stop();
 
