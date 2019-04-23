@@ -34,7 +34,7 @@ void autonomous()
   //pros::ADIMotor m('A');
 	//pros::Task printSerialTask(printSerialTaskfn, 0);
 
-  chassis.MasterController.stop();/*
+  chassis.MasterController.stop();
 
   bool screenShowLogoOnly = true;
 	lv_obj_t * Teleop_LicensePlate;
@@ -66,7 +66,7 @@ void autonomous()
 		lv_img_set_src(PYRO_License_Plate, &Image_PYRO_License_Plate);
 		lv_obj_align(PYRO_License_Plate, NULL, LV_ALIGN_CENTER, 0, -18);
 
-	}*/
+	}
   //pros::Controller M(CONTROLLER_MASTER);
   //chassis.teleop(M);
 
@@ -81,7 +81,7 @@ void autonomous()
   //chassis.MasterController.setMaxVoltage(500);
 
 //  while(1)
-  {
+
   //printf();
   if(autonomousIDNum == 0)
   {
@@ -91,11 +91,11 @@ void autonomous()
   else if(autonomousIDNum == 1)
   {
     std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
+    autonomousBlue1();
     //m.set_value(-100);
   }
   //std::cout << i++ << "\n";
-  pros::delay(10);
-}
+
 
   //autonomousRed1();
 
