@@ -15,10 +15,10 @@ void initialize()
 	//pros::lcd::set_text(1, "Hello PROS User!");
 	serialInit();
 
-	//styleInit();
-	//screenInit();//
+	styleInit();
+	screenInit();//
 
-	
+
 }
 
 /**
