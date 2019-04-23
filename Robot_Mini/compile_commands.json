@@ -393,11 +393,11 @@
             "-fdiagnostics-color",
             "--std=gnu++17",
             "-o",
-            "bin/autonomous.cpp.o",
-            "src\\autonomous.cpp"
+            "bin/robot.cpp.o",
+            "src\\robot.cpp"
         ],
         "directory": "C:\\PYRO\\GitHub\\vexu-2018-2019\\Robot_Mini",
-        "file": "src\\autonomous.cpp"
+        "file": "src\\robot.cpp"
     },
     {
         "arguments": [
@@ -428,11 +428,11 @@
             "-fdiagnostics-color",
             "--std=gnu++17",
             "-o",
-            "bin/robot.cpp.o",
-            "src\\robot.cpp"
+            "bin/autonomous.cpp.o",
+            "src\\autonomous.cpp"
         ],
         "directory": "C:\\PYRO\\GitHub\\vexu-2018-2019\\Robot_Mini",
-        "file": "src\\robot.cpp"
+        "file": "src\\autonomous.cpp"
     },
     {
         "arguments": [
