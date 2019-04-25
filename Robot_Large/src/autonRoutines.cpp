@@ -7,10 +7,10 @@ int autonomousIDNum = 1;
 void autonomousRed1()
 {
   //CW = (+), CCW, = (-) for turning
-  //shooter.FlywheelPID.flipDisable(false);
-  //arm.resetPos();
-
-  //pros::delay(99999999);
+  // shooter.FlywheelPID.flipDisable(false);
+  // arm.resetPos();
+  //
+  // pros::delay(99999999);
 
 
   shooter.FlywheelPID.flipDisable(true);
@@ -33,7 +33,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
   pros::delay(500);
 
-  chassis.MasterController.turnAngle(-133_deg); //Turn to have cap intake face lower cap
+  chassis.MasterController.turnAngle(-129_deg); //Turn to have cap intake face lower cap
   arm.goToPos(4, true);                        //Lower arm to lower limit
   chassis.MasterController.waitUntilSettled();
   pros::delay(250);
@@ -46,7 +46,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("4f_Place_Cap", false);  //Drive forward to bring bottom cap to side post
-  arm.goToPos(145, true);
+  arm.goToPos(175, true);
   arm.claw.rotate(45);
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{15_in,0_in,0_deg}}, "5b_Cross_Court");
   chassis.MotionController.waitUntilSettled();
@@ -76,11 +76,11 @@ void autonomousRed1()
   chassis.MotionController.setTarget("7f_Cross_Court", false);  //Drive forward to prepare to ram align against alliance platform
   intake.runMainIntake(0);    //Power off temporarily ball collector
   intake.runPreFlywheel(0);   //Power off temporarily ball collector
-  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{10_in,6.5_in,33_deg}}, "8b_Cross_Court");
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{10_in,6.5_in,32_deg}}, "8b_Cross_Court");
   chassis.MotionController.waitUntilSettled();
 
   chassis.MasterController.driveVector(0.075, 0);
-  pros::delay(1500);
+  pros::delay(3000);
   chassis.MasterController.stop();
 
   chassis.MotionController.setTarget("8b_Cross_Court", true);   //Drive backwards and turn to proper angle to shoot cross-court
