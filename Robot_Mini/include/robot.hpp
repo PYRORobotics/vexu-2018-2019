@@ -66,10 +66,11 @@ extern pros::Motor M_Intake_Preflywheel;
 class PYROIntake
 {
   private:
-    pros::Motor* IntakeMain;
-    pros::Motor* Preflywheel;
+
 
   public:
+    pros::Motor* IntakeMain;
+    pros::Motor* Preflywheel;
     okapi::AsyncPosIntegratedController MainIntakePID;
     okapi::AsyncPosIntegratedController PreFlywheelIntakePID;
     void runMainIntake(int signal);
@@ -99,7 +100,7 @@ class PYROShooter
     bool isRunning;
 
   public:
-
+    bool isCurrentlyMid;
     const double HOOD_MIN_ANGLE = 18;
     const double HOOD_MAX_ANGLE = 54;
 

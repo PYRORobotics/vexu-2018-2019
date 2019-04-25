@@ -53,7 +53,7 @@ void autonomousRed1()
 
 
   //////
-  shooter.setHoodAngle(37);
+  shooter.setHoodAngle(39);
   intake.MainIntakePID.flipDisable(false); //
   intake.PreFlywheelIntakePID.flipDisable(false); //
   intake.MainIntakePID.reset();
@@ -172,7 +172,7 @@ void autonomousRed1()
   chassis.MasterController.stop();
 
   //////
-  shooter.setHoodAngle(43);
+  shooter.setHoodAngle(40);
   intake.MainIntakePID.reset();
   intake.PreFlywheelIntakePID.reset();
   shooter.FlywheelPID.flipDisable(false);
@@ -372,7 +372,7 @@ void autonomousBlue1()
   chassis.MasterController.stop();
 
   //////
-  shooter.setHoodAngle(43);
+  shooter.setHoodAngle(40);
   intake.MainIntakePID.reset();
   intake.PreFlywheelIntakePID.reset();
   shooter.FlywheelPID.flipDisable(false);
@@ -403,6 +403,260 @@ void autonomousBlue1()
 
   chassis.MasterController.stop();
 }
+
+
+void autonomousSkills1()
+{
+  //chassis.MasterController.setMaxVoltage(6000);
+  std::cout << "BLUE" << "\n";
+  std::cout << "CAMON" << "\n";
+
+  intake.MainIntakePID.flipDisable(false); //
+  intake.PreFlywheelIntakePID.flipDisable(false); //
+  shooter.FlywheelPID.flipDisable(true);
+
+  intake.runMainIntake(100);
+  intake.runPreFlywheel(-100);
+
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{41_in,0_in,0_deg}}, "2");
+  chassis.MotionController.setTarget("1", false); //default false (straight)
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MotionController.setTarget("2", true); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{52_in,0_in,0_deg}}, "3");
+  chassis.MotionController.waitUntilSettled();
+
+  intake.runMainIntake(50);
+  intake.runPreFlywheel(-50);
+
+  chassis.MasterController.stop();
+  intake.MainIntakePID.flipDisable(true); //
+  intake.PreFlywheelIntakePID.flipDisable(true); //
+  chassis.MasterController.turnAngle(-96_deg);
+  chassis.MasterController.waitUntilSettled();
+  chassis.MasterController.stop();
+
+  chassis.MasterController.waitUntilSettled();
+  chassis.MasterController.stop();
+
+  intake.MainIntakePID.flipDisable(false); //
+  intake.PreFlywheelIntakePID.flipDisable(false);
+
+  intake.MainIntakePID.flipDisable(true); //
+  intake.PreFlywheelIntakePID.flipDisable(true); //
+
+
+  //chassis.turn(-5);
+  chassis.MasterController.waitUntilSettled();
+
+  intake.MainIntakePID.flipDisable(false); //
+  intake.PreFlywheelIntakePID.flipDisable(false); //
+
+
+  //////
+  shooter.setHoodAngle(37);
+  intake.MainIntakePID.flipDisable(false); //
+  intake.PreFlywheelIntakePID.flipDisable(false); //
+  intake.MainIntakePID.reset();
+  intake.PreFlywheelIntakePID.reset();
+  shooter.FlywheelPID.flipDisable(false);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(4000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-4000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(360 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(360 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+
+  shooter.setHoodAngle(22);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(4000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-4000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(500 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(500 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+  shooter.runFlywheel(0);
+  shooter.FlywheelPID.flipDisable(true);
+  //////
+  chassis.MasterController.stop();
+
+  intake.runMainIntake(50);
+  intake.runPreFlywheel(-50);
+
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{14_in,0_in,0_deg}}, "4");
+  chassis.MasterController.turnAngle(4_deg);
+  chassis.MasterController.waitUntilSettled();
+  //std::cout << "Facing 3, going to 3\n";
+  chassis.MotionController.setTarget("4", true); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{30.5_in,-13.5_in,-45_deg}}, "5");
+  chassis.MotionController.waitUntilSettled();
+
+  donger.DongerPID.flipDisable(false);
+  donger.DongerPID.setTarget(120*6);
+
+  chassis.MotionController.setTarget("5", false); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{18_in,0_in,45_deg}}, "6");
+  chassis.MotionController.waitUntilSettled();
+
+  intake.MainIntakePID.flipDisable(true); //
+  intake.PreFlywheelIntakePID.flipDisable(true); //
+
+  chassis.MasterController.waitUntilSettled();
+
+  intake.MainIntakePID.flipDisable(false); //
+  intake.PreFlywheelIntakePID.flipDisable(false); //
+
+  intake.runMainIntake(110);
+  intake.runPreFlywheel(-110);
+
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{8_in,0_in,0_deg}}, "7");
+  chassis.MotionController.waitUntilSettled();
+
+  donger.DongerPID.setTarget(190*6);
+  donger.DongerPID.waitUntilSettled();
+
+  chassis.MotionController.setTarget("7", true); //default false (straight)
+
+  chassis.MotionController.waitUntilSettled();
+
+  donger.DongerPID.setTarget(130*6);
+
+  chassis.MotionController.setTarget("7", false); //default false (straight)
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MotionController.setTarget("7", true); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{8_in,0_in,0_deg}}, "8");
+  chassis.MotionController.waitUntilSettled();
+
+  //////
+  shooter.setHoodAngle(37);
+  intake.MainIntakePID.reset();
+  intake.PreFlywheelIntakePID.reset();
+  shooter.FlywheelPID.flipDisable(false);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(4000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-4000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(360 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(360 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+
+  shooter.setHoodAngle(26);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(4000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-4000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+  shooter.runFlywheel(0);
+  intake.MainIntakePID.flipDisable(true);
+  intake.PreFlywheelIntakePID.flipDisable(true);
+  shooter.FlywheelPID.flipDisable(true);
+  //////
+
+  chassis.MotionController.setTarget("8", false); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,-45_deg}, Point{8_in,6_in,-90_deg}}, "9");
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MotionController.setTarget("9", false); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{52_in,0_in,-45_deg}}, "10");
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MotionController.setTarget("10", false); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,45_deg}, Point{20_in,64_in,90_deg}}, "11");
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MotionController.setTarget("7", false); //default false (straight)
+  chassis.MotionController.waitUntilSettled();
+
+
+  donger.DongerPID.setTarget(190*6);
+  donger.DongerPID.waitUntilSettled();
+
+  chassis.MotionController.setTarget("7", true); //default false (straight)
+  chassis.MotionController.waitUntilSettled();
+
+  donger.DongerPID.setTarget(130*6);
+
+  chassis.MotionController.setTarget("7", false); //default false (straight)
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MotionController.setTarget("11", false); //default false (straight)
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{12_in,0_in,0_deg}}, "12");
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MotionController.setTarget("12", true); //default false (straight)
+  chassis.MotionController.waitUntilSettled();
+
+  chassis.MasterController.turnAngle(165);
+  chassis.MasterController.waitUntilSettled();
+
+  //////
+  shooter.setHoodAngle(37);
+  intake.MainIntakePID.reset();
+  intake.PreFlywheelIntakePID.reset();
+  shooter.FlywheelPID.flipDisable(false);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(4000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-4000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(360 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(360 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+
+  shooter.setHoodAngle(26);
+  shooter.FlywheelPID.controllerSet(1);
+  intake.MainIntakePID.setTarget(4000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(-4000 + M_Intake_Preflywheel.get_position());
+  shooter.runFlywheel(87);
+  pros::delay(500);
+  shooter.FlywheelPID.waitUntilSettled();
+  intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
+  intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
+  intake.PreFlywheelIntakePID.waitUntilSettled();
+  shooter.runFlywheel(0);
+  intake.MainIntakePID.flipDisable(true);
+  intake.PreFlywheelIntakePID.flipDisable(true);
+  shooter.FlywheelPID.flipDisable(true);
+  //////
+
+  chassis.MasterController.turnAngle(-75);
+  chassis.MasterController.waitUntilSettled();
+
+  chassis.MasterController.driveVector(0.8,0);
+  pros::delay(2250);
+
+  chassis.MasterController.stop();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

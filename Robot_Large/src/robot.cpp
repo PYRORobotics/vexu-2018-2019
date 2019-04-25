@@ -16,6 +16,7 @@
 PYROChassis chassis1();*/
 void PYROChassis::teleop(ControllerMode mode, pros::Controller Cont)
 {
+  chassis.MasterController.setBrakeMode(AbstractMotor::brakeMode::hold);
   //yaw = IMU_YAW;
   switch (mode)
   {
@@ -375,32 +376,48 @@ void PYROArm::teleop()
   // }
   claw.teleop(Controller_1);
 
-  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+  if(abs(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) > 20)
   {
-    ArmPID.flipDisable(false);
-    double target = ArmPID.getTarget();
-    goToPos(450, true);
-    isCurrentlyDown = true;
-  }
-  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
-  {
-    ArmPID.flipDisable(false);
-    double target = ArmPID.getTarget();
-    goToPos(4, true);
-    isCurrentlyDown = true;
-  }
-  else if(Controller_0.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
-  {
-    ArmPID.flipDisable(false);
-    if (isCurrentlyDown)
+    ArmLeft->move(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+    ArmRight->move(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+    if(ArmLeft->get_position() > 105)
     {
-      goToPos(105, true);
-      isCurrentlyDown = !isCurrentlyDown;
+      isCurrentlyDown = false;
     }
     else
     {
+      isCurrentlyDown = true;
+    }
+  }
+  else
+  {
+    if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+    {
+      ArmPID.flipDisable(false);
+      double target = ArmPID.getTarget();
+      goToPos(450, true);
+      isCurrentlyDown = true;
+    }
+    else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+    {
+      ArmPID.flipDisable(false);
+      double target = ArmPID.getTarget();
       goToPos(4, true);
-      isCurrentlyDown = !isCurrentlyDown;
+      isCurrentlyDown = true;
+    }
+    else if(Controller_0.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
+    {
+      ArmPID.flipDisable(false);
+      if (isCurrentlyDown)
+      {
+        goToPos(105, true);
+        isCurrentlyDown = !isCurrentlyDown;
+      }
+      else
+      {
+        goToPos(4, true);
+        isCurrentlyDown = !isCurrentlyDown;
+      }
     }
   }
 }
@@ -438,31 +455,13 @@ int torquei = 0;
 double averageTorque = 0;
 void PYROClaw::teleop(pros::Controller Cont)
 {
-  ClawRotate->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-  lastTorques[torquei] = ClawMain->get_torque();
-  averageTorque = 0;
-  for(int i = 0; i < 100; i++)
+  if(abs(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)) > 20)
   {
-    averageTorque += lastTorques[i];
+    ClawRotate->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+    ClawRotate->move(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X) * 50/127);
   }
-  averageTorque /= 100;
-
-  runIntake(0);
-    if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
-    {
-      pros::lcd::print(4, "Torque (Nm): %f", ClawMain->get_torque());
-      pros::lcd::print(5, "AVG Torque (Nm): %f", averageTorque);
-      ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-      if(averageTorque<0.2)
-        runIntake(120);
-    }
-    else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
-    {
-      ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-      runIntake(-60);
-    }
-
+  else
+  {
     if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT))
     {
       if(ClawRotate->get_position() > -10)
@@ -470,19 +469,46 @@ void PYROClaw::teleop(pros::Controller Cont)
       else
         rotate(0);
     }
-
-
-
-    /* //UNCOMMENT AND CHANGE NEW PRESS -> get_digital FOR HOLD INSTEAD OF TOGGLE
-    else
+  }
+    ClawRotate->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    lastTorques[torquei] = ClawMain->get_torque();
+    averageTorque = 0;
+    for(int i = 0; i < 100; i++)
     {
-      runIntake(0);
-    }*/
+      averageTorque += lastTorques[i];
+    }
+    averageTorque /= 100;
 
-    if(torquei == 99)
-      torquei = 0;
-    else
-      torquei++;
+    runIntake(0);
+      if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
+      {
+        pros::lcd::print(4, "Torque (Nm): %f", ClawMain->get_torque());
+        pros::lcd::print(5, "AVG Torque (Nm): %f", averageTorque);
+        ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+        if(averageTorque<0.2)
+          runIntake(120);
+      }
+      else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
+      {
+        ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+        runIntake(-60);
+      }
+
+
+
+
+
+      /* //UNCOMMENT AND CHANGE NEW PRESS -> get_digital FOR HOLD INSTEAD OF TOGGLE
+      else
+      {
+        runIntake(0);
+      }*/
+
+      if(torquei == 99)
+        torquei = 0;
+      else
+        torquei++;
 }
 
 /*Reverses Claw Acutators if true (Normally false)*/

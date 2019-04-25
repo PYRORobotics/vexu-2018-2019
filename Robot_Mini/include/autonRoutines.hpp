@@ -6,5 +6,7 @@
 extern int autonomousIDNum;
 extern void autonomousRed1();
 extern void autonomousBlue1();
+extern void autonomousSkills1();
+
 
 #endif

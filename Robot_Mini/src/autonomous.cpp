@@ -18,6 +18,22 @@ void printSerialTaskfn(void*)
 	}
 }
 */
+
+void cancelAutoTaskfn(void*)
+{
+  while(1)
+  {
+    //chassis.MasterController.getSensorVals();
+    pros::Motor LF(1);
+    if(LF.get_torque()>5)
+    {
+      disabled();
+    }
+  }
+}
+
+
+
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -33,6 +49,8 @@ void autonomous()
 {//int i = 0;
   //pros::ADIMotor m('A');
 	//pros::Task printSerialTask(printSerialTaskfn, 0);
+
+  //pros::Task cancelAutoTask(cancelAutoTaskfn, NULL);
 
   chassis.MasterController.stop();
 
@@ -81,7 +99,7 @@ void autonomous()
   //chassis.MasterController.setMaxVoltage(500);
 
 //  while(1)
-  
+
   //printf();
   if(autonomousIDNum == 0)
   {
@@ -93,6 +111,14 @@ void autonomous()
   {
     std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
     autonomousBlue1();
+    std::cout << "BLUE" << "\n";
+  }
+
+
+  else if(autonomousIDNum == -1)
+  {
+    std::cout << "Autonomous " << autonomousIDNum << " Running...\n";
+    autonomousSkills1();
     std::cout << "BLUE" << "\n";
   }
   //std::cout << i++ << "\n";
