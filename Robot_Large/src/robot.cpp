@@ -18,6 +18,12 @@ void PYROChassis::teleop(ControllerMode mode, pros::Controller Cont)
 {
   chassis.MasterController.setBrakeMode(AbstractMotor::brakeMode::hold);
   //yaw = IMU_YAW;
+  if(abs(Controller_0.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y)) > 20)
+  {
+    MasterController.arcade((double)Cont.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y)/127, 0);
+  }
+  else
+  {
   switch (mode)
   {
     case tank:
@@ -29,6 +35,7 @@ void PYROChassis::teleop(ControllerMode mode, pros::Controller Cont)
     case arcade2joysticks:
       MasterController.arcade((double)Cont.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)/127, (double)Cont.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)/127);
       break;
+    }
   }
 }
 
@@ -210,6 +217,7 @@ PYROShooter::PYROShooter(int) : FlywheelPID(AsyncControllerFactory::velPID(
   HoodMotor = &M_Flywheel_Hood;
   HoodMotor->tare_position();
   isRunning = 0;
+  isCurrentlyMid = true;
   FlywheelPID.flipDisable(false); //FIXME Test default false?
 }
 
@@ -228,61 +236,103 @@ void PYROShooter::runFlywheel(int rpm)
 int flywheelMillisSince;
 
 void PYROShooter::teleop(pros::Controller Cont)
-{
-  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) //single shot
+{/*
+  runFlywheel(500);
+  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
-    Cont.rumble(".");
-    intake.MainIntakePID.flipDisable(false);
+    FlywheelPID.flipDisable(true);
+    flywheelMillisSince = pros::millis();
+    while(pros::millis() < 2000 + flywheelMillisSince)
+    {
+      pros::lcd::print(6, "%d", pros::millis());
+      pros::lcd::print(7, "%d", 500 + flywheelMillisSince);
+    }
+    intake.shootBall(1);
+    FlywheelPID.flipDisable(false);
+  }
+  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+  {
+    FlywheelPID.flipDisable(true);
+    flywheelMillisSince = pros::millis();
+    while(pros::millis() < 2000 + flywheelMillisSince)
+    {
+      pros::lcd::print(6, "%d", pros::millis());
+      pros::lcd::print(7, "%d", 500 + flywheelMillisSince);
+    }
+    intake.shootBall(2);
+    FlywheelPID.flipDisable(false);
+  }*/
+  double firstShotAngle;
+  double secondShotAngle;
+
+  if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+  {
     intake.PreFlywheelIntakePID.flipDisable(false);
+    intake.MainIntakePID.flipDisable(false);
     //intake.MainIntakePID.reset();
     //intake.PreFlywheelIntakePID.reset();
     FlywheelPID.flipDisable(false);
-    FlywheelPID.controllerSet(1);
-    intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
-    runFlywheel(80);
-    pros::delay(500);
-    FlywheelPID.waitUntilSettled();
-    intake.MainIntakePID.setTarget(200 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
+    //FlywheelPID.controllerSet(1);
+    ///intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
+    ///intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+    ///runFlywheel(87);
+    //pros::delay(500);
+    //FlywheelPID.waitUntilSettled();
+    intake.MainIntakePID.setTarget(360 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(360 + M_Intake_Preflywheel.get_position());
+    pros::delay(50);
     intake.PreFlywheelIntakePID.waitUntilSettled();
-    runFlywheel(0);
+    FlywheelPID.flipDisable(true);
     intake.MainIntakePID.flipDisable(true);
     intake.PreFlywheelIntakePID.flipDisable(true);
-    FlywheelPID.flipDisable(true);
-
-    pros::lcd::print(7, "Shooting");
   }
-  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))  //double shot
+  else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
   {
-    Cont.rumble("- .");
-    setHoodAngle(HIGH_FLAG_ANGLE);
+    if(isCurrentlyMid)
+    {
+      firstShotAngle = 23;
+      secondShotAngle = 37;
+      isCurrentlyMid = !isCurrentlyMid;
+    }
+    else
+    {
+      firstShotAngle = 37;
+      secondShotAngle = 23;
+      isCurrentlyMid = !isCurrentlyMid;
+    }
+    //Cont.rumble("- .");
+    setHoodAngle(firstShotAngle);
+
     intake.MainIntakePID.flipDisable(false);
     intake.PreFlywheelIntakePID.flipDisable(false);
     //intake.MainIntakePID.reset();
     //intake.PreFlywheelIntakePID.reset();
     FlywheelPID.flipDisable(false);
-    FlywheelPID.controllerSet(1);
-    intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
-    runFlywheel(82);
-    pros::delay(500);
-    FlywheelPID.waitUntilSettled();
-    intake.MainIntakePID.setTarget(200 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
+    //FlywheelPID.controllerSet(1);
+    ///intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
+    ///intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
+    ///runFlywheel(87);
+    //pros::delay(500);
+    //FlywheelPID.waitUntilSettled();
+    intake.MainIntakePID.setTarget(360 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(360 + M_Intake_Preflywheel.get_position());
+    pros::delay(50);
     intake.PreFlywheelIntakePID.waitUntilSettled();
 
-    setHoodAngle(MID_FLAG_ANGLE);
-    FlywheelPID.controllerSet(1);
-    intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
-    runFlywheel(82);
-    pros::delay(500);
-    FlywheelPID.waitUntilSettled();
-    intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
+    setHoodAngle(secondShotAngle);
+    //FlywheelPID.controllerSet(1);
+    intake.MainIntakePID.setTarget(90 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(-90 + M_Intake_Preflywheel.get_position());
+    pros::delay(50);
     intake.PreFlywheelIntakePID.waitUntilSettled();
-    runFlywheel(0);
+    //runFlywheel(87);
+    //pros::delay(500);
+    FlywheelPID.waitUntilSettled();
+    intake.MainIntakePID.setTarget(800 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(800 + M_Intake_Preflywheel.get_position());
+    pros::delay(50);
+    intake.PreFlywheelIntakePID.waitUntilSettled();
+
     intake.MainIntakePID.flipDisable(true);
     intake.PreFlywheelIntakePID.flipDisable(true);
     FlywheelPID.flipDisable(true);
@@ -291,15 +341,15 @@ void PYROShooter::teleop(pros::Controller Cont)
   }
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
-    setHoodAngle(HIGH_FLAG_ANGLE);
-    Cont.rumble(". . .");
-    Controller_1.rumble(". . .");
+    setHoodAngle(37);
+    //Cont.rumble(". -");
+    //Controller_1.rumble(". -");
   }
   else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
   {
-    setHoodAngle(MID_FLAG_ANGLE);
-    Cont.rumble("- - -");
-    Controller_1.rumble("- - -");
+    setHoodAngle(23);
+    //Cont.rumble(". .");
+    //Controller_1.rumble(". .");
   }
   if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
   {
@@ -311,6 +361,7 @@ void PYROShooter::teleop(pros::Controller Cont)
     FlywheelPID.controllerSet(0);
     FlywheelPID.flipDisable(true);
   }
+
 }
 
 /*void PYROShooter::teleopTask(void*)
@@ -360,6 +411,8 @@ void PYROArm::goToPos(double degrees, bool hold)
 
 //int armMillisSince;
 
+int torqueIRescore = -1;
+
 void PYROArm::teleop()
 {
   // if(isFirstTime) //initialize arm and also trying hood
@@ -376,10 +429,87 @@ void PYROArm::teleop()
   // }
   claw.teleop(Controller_1);
 
-  if(abs(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y)) > 20)
+  double lastTorquesRescore[100] = {0};
+
+  if(Controller_1.get_digital(pros::E_CONTROLLER_DIGITAL_X) == 1)
   {
-    ArmLeft->move(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
-    ArmRight->move(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
+    goToPos(445, true);
+    while(ArmLeft->get_position()<440)
+    {
+      pros::delay(20);
+    }
+    pros::delay(200);
+
+
+    while(claw.ClawMain->get_torque()<0.5)
+    {
+
+      claw.runIntake(120);
+      pros::delay(20);
+    }
+
+    goToPos(375, true);
+    while(ArmLeft->get_position()>380)
+    {
+      pros::delay(20);
+    }
+    pros::delay(200);
+
+    if(claw.ClawRotate->get_position() > -90)
+    {
+      claw.rotate(-181);
+    }
+    else
+    {
+      claw.rotate(0);
+    }
+    pros::delay(200);
+    while(claw.ClawRotate->get_position() > -2 || claw.ClawRotate->get_position() > 179)
+    {
+      pros::delay(20);
+    }
+    pros::delay(500);
+
+    goToPos(455, true);
+    while(ArmLeft->get_position()<450)
+    {
+      pros::delay(20);
+    }
+
+    pros::delay(500);
+
+
+    claw.runIntake(-120);
+    pros::delay(500);
+    claw.runIntake(0);
+
+    goToPos(450, true);
+    isCurrentlyDown = false;
+
+
+
+  }
+  else if(Controller_1.get_digital(pros::E_CONTROLLER_DIGITAL_UP) == 1)
+  {
+    ArmLeft->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ArmRight->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ArmLeft->move(127);
+    ArmRight->move(127);
+    if(ArmLeft->get_position() > 105)
+    {
+      isCurrentlyDown = false;
+    }
+    else
+    {
+      isCurrentlyDown = true;
+    }
+  }
+  else if(Controller_1.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) == 1)
+  {
+    ArmLeft->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ArmRight->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ArmLeft->move(-127);
+    ArmRight->move(-127);
     if(ArmLeft->get_position() > 105)
     {
       isCurrentlyDown = false;
@@ -391,6 +521,8 @@ void PYROArm::teleop()
   }
   else
   {
+    ArmLeft->move(0);
+    ArmRight->move(0);
     if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
     {
       ArmPID.flipDisable(false);
@@ -455,10 +587,15 @@ int torquei = 0;
 double averageTorque = 0;
 void PYROClaw::teleop(pros::Controller Cont)
 {
-  if(abs(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)) > 20)
+  if(abs(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X)) >= 20)
   {
-    ClawRotate->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-    ClawRotate->move(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X) * 50/127);
+    int directionMulti;
+    if(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X) >= 0)
+      directionMulti = -1;
+    else
+      directionMulti = 1;
+    ClawRotate->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ClawRotate->move(Controller_1.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X) * 50/127 + directionMulti * 20);
   }
   else
   {
@@ -480,7 +617,7 @@ void PYROClaw::teleop(pros::Controller Cont)
     averageTorque /= 100;
 
     runIntake(0);
-      if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_UP))
+      if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_R1))
       {
         pros::lcd::print(4, "Torque (Nm): %f", ClawMain->get_torque());
         pros::lcd::print(5, "AVG Torque (Nm): %f", averageTorque);
@@ -489,7 +626,7 @@ void PYROClaw::teleop(pros::Controller Cont)
         if(averageTorque<0.2)
           runIntake(120);
       }
-      else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN))
+      else if(Cont.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
       {
         ClawMain->set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
         runIntake(-60);

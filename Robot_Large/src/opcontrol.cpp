@@ -36,6 +36,29 @@ void shooterTask(void*)
 		pros::delay(5);
 	}
 }
+
+pros::Task shooterTeleopTask(shooterTask, NULL);
+
+void shooterDaemonTask(void*)
+{
+	while(1)
+	{
+		if(Controller_0.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
+		{
+			shooterTeleopTask.remove();
+
+			shooter.FlywheelPID.flipDisable(true);
+			intake.MainIntakePID.flipDisable(true);
+			intake.PreFlywheelIntakePID.flipDisable(true);
+			pros::delay(500);
+
+			//intake.MainIntakePID.flipDisable(false);
+			//intake.PreFlywheelIntakePID.flipDisable(false);
+			pros::Task shooterTeleopTask(shooterTask, NULL);
+		}
+		pros::delay(20);
+	}
+}
 void armTask(void*)
 {
 	while(1)
@@ -61,8 +84,9 @@ void armTask(void*)
 void opcontrol()
 {
 	pros::Task printSerialTask(printSerialTaskfn, 0);
-	pros::Task shooterTeleopTask(shooterTask, NULL);
+	//pros::Task shooterTeleopTask(shooterTask, NULL);
 	pros::Task armTeleopTask(armTask, NULL);
+	pros::Task shooterCancelTask(shooterDaemonTask, NULL);
 	//chassis.MasterController.stop();
 /*
 	// SET UP SCREEN //

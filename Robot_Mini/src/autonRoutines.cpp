@@ -565,11 +565,11 @@ void autonomousSkills1()
   //////
 
   chassis.MotionController.setTarget("8", false); //default false (straight)
-  chassis.MotionController.generatePath({Point{0_in,0_in,-45_deg}, Point{8_in,6_in,-90_deg}}, "9");
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{8_in,6_in,-45_deg}}, "9");
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("9", false); //default false (straight)
-  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{52_in,0_in,-45_deg}}, "10");
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{52_in,0_in,45_deg}}, "10");
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("10", false); //default false (straight)

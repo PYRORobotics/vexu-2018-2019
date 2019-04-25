@@ -165,6 +165,6 @@ static lv_res_t btnm_action(lv_obj_t * btnm, const char *txt)
   return LV_RES_OK; /*Return OK because the button matrix is not deleted*/
 }
 
-static const char * btnm_map[] = {"Red 1","Blue 1"}; //,"Red 2","Blue 2"
+static const char * btnm_map[] = {"Red 1","Blue 1","Skills 1"}; //,"Red 2","Blue 2"
 
 #endif

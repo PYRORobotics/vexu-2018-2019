@@ -87,13 +87,14 @@ extern pros::Motor M_Flywheel_Hood;
 class PYROShooter
 {
   private:
-    pros::Motor* FrontMotor;
-    pros::Motor* RearMotor;
+
     pros::Motor* HoodMotor;
     bool isRunning;
 
   public:
-
+    pros::Motor* FrontMotor;
+    pros::Motor* RearMotor;
+    bool isCurrentlyMid;
     const double HOOD_MIN_ANGLE = 14;
     const double HOOD_MAX_ANGLE = 54;
     const double HIGH_FLAG_ANGLE = 32;
@@ -114,10 +115,10 @@ class PYROShooter
  class PYROClaw
  {
   private:
-    pros::Motor* ClawMain;
 
 
   public:
+    pros::Motor* ClawMain;
     pros::Motor* ClawRotate;
     void runIntake(int signal, bool inward = true);
     void rotate(double deg);
