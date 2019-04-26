@@ -33,7 +33,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
   pros::delay(500);
 
-  chassis.MasterController.turnAngle(-129_deg); //Turn to have cap intake face lower cap
+  chassis.MasterController.turnAngle(-128_deg); //Turn to have cap intake face lower cap
   arm.goToPos(4, true);                        //Lower arm to lower limit
   chassis.MasterController.waitUntilSettled();
   pros::delay(250);
@@ -46,7 +46,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("4f_Place_Cap", false);  //Drive forward to bring bottom cap to side post
-  arm.goToPos(175, true);
+  arm.goToPos(300, true);
   arm.claw.rotate(45);
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{15_in,0_in,0_deg}}, "5b_Cross_Court");
   chassis.MotionController.waitUntilSettled();
@@ -92,7 +92,7 @@ void autonomousRed1()
   chassis.MotionController.waitUntilSettled();
 
   //SHOOTING SEQUENCE
-  shooter.setHoodAngle(28); //28 hit 1
+  shooter.setHoodAngle(31);//31); //28
   shooter.FlywheelPID.flipDisable(false);
   intake.MainIntakePID.flipDisable(false);
   intake.PreFlywheelIntakePID.flipDisable(false);
@@ -105,17 +105,19 @@ void autonomousRed1()
   shooter.runFlywheel(82);
   pros::delay(500);
   shooter.FlywheelPID.waitUntilSettled();
+  pros::delay(500);
   intake.MainIntakePID.setTarget(200 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
   intake.PreFlywheelIntakePID.waitUntilSettled();
 
-  shooter.setHoodAngle(20); //20
+  shooter.setHoodAngle(26);//24); //20
   shooter.FlywheelPID.controllerSet(1);
   intake.MainIntakePID.setTarget(15000 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(-15000 + M_Intake_Preflywheel.get_position());
   shooter.runFlywheel(82);
   pros::delay(500);
   shooter.FlywheelPID.waitUntilSettled();
+  pros::delay(500);
   intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
   intake.PreFlywheelIntakePID.waitUntilSettled();
@@ -136,7 +138,7 @@ void autonomousRed1()
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{42_in,0_in,0_deg}}, "11f_Alliance_Park");  //24_in,-26_in,0_deg + false
   chassis.MotionController.waitUntilSettled();
 
-  chassis.MasterController.turnAngle(-45_deg); //Turn to rear face alliance platform
+  chassis.MasterController.turnAngle(-50_deg); //Turn to rear face alliance platform
   chassis.MasterController.waitUntilSettled();
   pros::delay(250);
 
@@ -183,7 +185,7 @@ void autonomousBlue1()
   chassis.MotionController.waitUntilSettled();
   pros::delay(500);
 
-  chassis.MasterController.turnAngle(133_deg); //Turn to have cap intake face lower cap
+  chassis.MasterController.turnAngle(128_deg); //Turn to have cap intake face lower cap
   arm.goToPos(4, true);                        //Lower arm to lower limit
   chassis.MasterController.waitUntilSettled();
   pros::delay(250);
@@ -196,7 +198,7 @@ void autonomousBlue1()
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("4f_Place_Cap", false);  //Drive forward to bring bottom cap to side post
-  arm.goToPos(145, true);
+  arm.goToPos(300, true);
   arm.claw.rotate(-45);
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{15_in,0_in,0_deg}}, "5b_Cross_Court");
   chassis.MotionController.waitUntilSettled();
@@ -214,7 +216,7 @@ void autonomousBlue1()
   chassis.MotionController.setTarget("5b_Cross_Court", true); //Drive backward to cross-court area
   arm.claw.runIntake(60, false);                 //Reverse cap intake
   //arm.goToPos(450, true);
-  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{16_in,-10_in,-91_deg}}, "6b_Cross_Court");
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{16_in,-10_in,-90_deg}}, "6b_Cross_Court");
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("6b_Cross_Court", true); //Drive backward and turn and front face alliance platform
@@ -226,7 +228,7 @@ void autonomousBlue1()
   chassis.MotionController.setTarget("7f_Cross_Court", false);  //Drive forward to prepare to ram align against alliance platform
   intake.runMainIntake(0);    //Power off temporarily ball collector
   intake.runPreFlywheel(0);   //Power off temporarily ball collector
-  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{10_in,-6.5_in,-34_deg}}, "8b_Cross_Court");
+  chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{10_in,-6.5_in,-32_deg}}, "8b_Cross_Court");
   chassis.MotionController.waitUntilSettled();
 
   chassis.MasterController.driveVector(0.075, 0);
@@ -242,7 +244,7 @@ void autonomousBlue1()
   chassis.MotionController.waitUntilSettled();
 
   //SHOOTING SEQUENCE
-  shooter.setHoodAngle(28); //28 hit 1
+  shooter.setHoodAngle(31);//31); //28
   shooter.FlywheelPID.flipDisable(false);
   intake.MainIntakePID.flipDisable(false);
   intake.PreFlywheelIntakePID.flipDisable(false);
@@ -255,17 +257,19 @@ void autonomousBlue1()
   shooter.runFlywheel(82);
   pros::delay(500);
   shooter.FlywheelPID.waitUntilSettled();
+  pros::delay(500);
   intake.MainIntakePID.setTarget(200 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
   intake.PreFlywheelIntakePID.waitUntilSettled();
 
-  shooter.setHoodAngle(20); //20
+  shooter.setHoodAngle(26);//24); //20
   shooter.FlywheelPID.controllerSet(1);
   intake.MainIntakePID.setTarget(15000 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(-15000 + M_Intake_Preflywheel.get_position());
   shooter.runFlywheel(82);
   pros::delay(500);
   shooter.FlywheelPID.waitUntilSettled();
+  pros::delay(500);
   intake.MainIntakePID.setTarget(1000 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(1000 + M_Intake_Preflywheel.get_position());
   intake.PreFlywheelIntakePID.waitUntilSettled();
