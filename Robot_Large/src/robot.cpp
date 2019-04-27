@@ -217,7 +217,8 @@ PYROShooter::PYROShooter(int) : FlywheelPID(AsyncControllerFactory::velPID(
   HoodMotor = &M_Flywheel_Hood;
   HoodMotor->tare_position();
   isRunning = 0;
-  isCurrentlyMid = true;
+  isHighShot = true;
+  isNearShot = false;
   FlywheelPID.flipDisable(false); //FIXME Test default false?
 }
 
@@ -264,7 +265,14 @@ void PYROShooter::teleop(pros::Controller Cont)
   else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))  //double shot
   {
     Cont.rumble("- .");
-    setHoodAngle(HIGH_FLAG_ANGLE);
+    if (isNearShot)
+    {
+      setHoodAngle(HIGH_FLAG_ANGLE_NEAR);
+    }
+    else 
+    {
+      setHoodAngle(HIGH_FLAG_ANGLE_FAR);
+    }
     intake.MainIntakePID.flipDisable(false);
     intake.PreFlywheelIntakePID.flipDisable(false);
     //intake.MainIntakePID.reset();
@@ -280,7 +288,14 @@ void PYROShooter::teleop(pros::Controller Cont)
     intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
     intake.PreFlywheelIntakePID.waitUntilSettled();
 
-    setHoodAngle(MID_FLAG_ANGLE);
+    if (isNearShot)
+    {
+      setHoodAngle(MID_FLAG_ANGLE_NEAR);
+    }
+    else
+    {
+      setHoodAngle(MID_FLAG_ANGLE_FAR);
+    }
     FlywheelPID.controllerSet(1);
     intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
     intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
@@ -297,15 +312,55 @@ void PYROShooter::teleop(pros::Controller Cont)
 
     pros::lcd::print(7, "Shooting");
   }
-  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) //Choose shot distance
   {
-    setHoodAngle(HIGH_FLAG_ANGLE);
+    isNearShot = false;
+    if (isHighShot)
+    {
+      setHoodAngle(HIGH_FLAG_ANGLE_FAR);
+    }
+    else
+    {
+      setHoodAngle(MID_FLAG_ANGLE_FAR);
+    }
+  }
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) //Choose shot distance
+  {
+    isNearShot = true;
+    if (isHighShot)
+    {
+      setHoodAngle(HIGH_FLAG_ANGLE_NEAR);
+    }
+    else
+    {
+      setHoodAngle(MID_FLAG_ANGLE_NEAR);
+    }
+  }
+  if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) //Choose high shot
+  {
+    isHighShot = true;
+    if (isNearShot)
+    {
+      setHoodAngle(HIGH_FLAG_ANGLE_NEAR);
+    }
+    else
+    {
+      setHoodAngle(HIGH_FLAG_ANGLE_FAR);
+    }
     Cont.rumble(". . .");
     Controller_1.rumble(". . .");
   }
-  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+  else if(Controller_1.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))  //Choose mid shot
   {
-    setHoodAngle(MID_FLAG_ANGLE);
+    isHighShot = false;
+    if (isNearShot)
+    {
+      setHoodAngle(MID_FLAG_ANGLE_NEAR);
+    }
+    else
+    {
+      setHoodAngle(MID_FLAG_ANGLE_FAR);
+    }
     Cont.rumble("- - -");
     Controller_1.rumble("- - -");
   }
@@ -387,7 +442,7 @@ void PYROArm::teleop()
 
   double lastTorquesRescore[100] = {0};
 
-  if(Controller_1.get_digital(pros::E_CONTROLLER_DIGITAL_X) == 1)
+  if(Controller_1.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT) == 1)
   {
     goToPos(455, true);
     while(ArmLeft->get_position()<450)
