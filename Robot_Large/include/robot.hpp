@@ -94,11 +94,14 @@ class PYROShooter
   public:
     pros::Motor* FrontMotor;
     pros::Motor* RearMotor;
-    bool isCurrentlyMid;
+    bool isHighShot;
+    bool isNearShot;
     const double HOOD_MIN_ANGLE = 14;
     const double HOOD_MAX_ANGLE = 54;
-    const double HIGH_FLAG_ANGLE = 32;
-    const double MID_FLAG_ANGLE = 14;
+    const double HIGH_FLAG_ANGLE_NEAR = 32;
+    const double MID_FLAG_ANGLE_NEAR = 14;
+    const double HIGH_FLAG_ANGLE_FAR = 28;
+    const double MID_FLAG_ANGLE_FAR = 17.5;
 
     okapi::AsyncVelPIDController FlywheelPID;
     void runFlywheel(int signal);
