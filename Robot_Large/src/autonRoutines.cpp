@@ -18,6 +18,7 @@ void autonomousRed1()
 
   intake.runMainIntake(100);    //Power on ball collector
   intake.runPreFlywheel(-100);   //Power on ball collector
+  arm.claw.ClawMain->move(100);                   //Forward cap intake
 
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{45_in,0_in,0_deg}}, "1f_Collect_Ball");
   chassis.MotionController.setTarget("1f_Collect_Ball", false);  //Drive forward into ball under cap
@@ -41,11 +42,12 @@ void autonomousRed1()
   chassis.MotionController.setTarget("3b_Grab_Cap", true); //Drive backward into lower cap
   arm.resetPos();
   arm.goToPos(3, true);                         //Keep arm down to lower limit while picking up cap
-  arm.claw.runIntake(100, true);                   //Forward cap intake
+  arm.claw.ClawMain->move(100);                   //Forward cap intake
   chassis.MotionController.generatePath({Point{0_in,0_in,57_deg}, Point{2_in,35_in,90_deg}}, "4f_Place_Cap");
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("4f_Place_Cap", false);  //Drive forward to bring bottom cap to side post
+  arm.claw.ClawMain->move(50);                   //Forward cap intake
   arm.goToPos(300, true);
   arm.claw.rotate(45);
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{15_in,0_in,0_deg}}, "5b_Cross_Court");
@@ -110,7 +112,7 @@ void autonomousRed1()
   intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
   intake.PreFlywheelIntakePID.waitUntilSettled();
 
-  shooter.setHoodAngle(26);//24); //20
+  shooter.setHoodAngle(24);//24); //20
   shooter.FlywheelPID.controllerSet(1);
   intake.MainIntakePID.setTarget(15000 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(-15000 + M_Intake_Preflywheel.get_position());
@@ -170,6 +172,7 @@ void autonomousBlue1()
 
   intake.runMainIntake(100);    //Power on ball collector
   intake.runPreFlywheel(-100);   //Power on ball collector
+  arm.claw.ClawMain->move(100);                   //Forward cap intake
 
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{45_in,0_in,0_deg}}, "1f_Collect_Ball");
   chassis.MotionController.setTarget("1f_Collect_Ball", false);  //Drive forward into ball under cap
@@ -193,11 +196,12 @@ void autonomousBlue1()
   chassis.MotionController.setTarget("3b_Grab_Cap", true); //Drive backward into lower cap
   arm.resetPos();
   arm.goToPos(3, true);                         //Keep arm down to lower limit while picking up cap
-  arm.claw.runIntake(100, true);                   //Forward cap intake
+  arm.claw.ClawMain->move(100);                   //Forward cap intake
   chassis.MotionController.generatePath({Point{0_in,0_in,-57_deg}, Point{2_in,-35_in,-90_deg}}, "4f_Place_Cap");
   chassis.MotionController.waitUntilSettled();
 
   chassis.MotionController.setTarget("4f_Place_Cap", false);  //Drive forward to bring bottom cap to side post
+  arm.claw.ClawMain->move(50);                   //Forward cap intake
   arm.goToPos(300, true);
   arm.claw.rotate(-45);
   chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{15_in,0_in,0_deg}}, "5b_Cross_Court");
@@ -262,7 +266,7 @@ void autonomousBlue1()
   intake.PreFlywheelIntakePID.setTarget(200 + M_Intake_Preflywheel.get_position());
   intake.PreFlywheelIntakePID.waitUntilSettled();
 
-  shooter.setHoodAngle(26);//24); //20
+  shooter.setHoodAngle(24);//24); //20
   shooter.FlywheelPID.controllerSet(1);
   intake.MainIntakePID.setTarget(15000 + M_Intake_Main.get_position());
   intake.PreFlywheelIntakePID.setTarget(-15000 + M_Intake_Preflywheel.get_position());
