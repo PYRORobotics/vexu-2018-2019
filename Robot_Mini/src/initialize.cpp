@@ -82,7 +82,7 @@ void initialize()
 	screenInit();//
 
 	//arm.resetPos();
-	chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{35_in,0_in,0_deg}}, "1");
+	chassis.MotionController.generatePath({Point{0_in,0_in,0_deg}, Point{34.5_in,0_in,0_deg}}, "1");
 
 	pros::Task printSerialTask(printSerialTaskfn, 0);
 	//pros::Task telemetryTask(telemetryTaskfn, 0);

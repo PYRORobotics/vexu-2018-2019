@@ -22,7 +22,7 @@ class PYROChassis
    const okapi::AbstractMotor::GearsetRatioPair ratio = okapi::AbstractMotor::gearset::green;// * (1.0382);
    //double yaw;
  public:
-   const okapi::MotorGroup MG_Drivetrain_Left = {1,-2,3};
+   const okapi::MotorGroup MG_Drivetrain_Left = {3,-4,5};
    const okapi::MotorGroup MG_Drivetrain_Right = {-8,9,-10};
    static double heading;
    static double x;

@@ -272,7 +272,7 @@ PYROShooter::PYROShooter(int) : FlywheelPID(AsyncControllerFactory::velPID(
   FrontMotor = &M_Flywheel_F;
   RearMotor = &M_Flywheel_R;
   HoodMotor = &M_Flywheel_Hood;
-  isCurrentlyMid = true;
+  isCurrentlyMid = false;
   HoodMotor->tare_position();
   isRunning = 0;
   FlywheelPID.flipDisable(false); //FIXME Test default false?
@@ -291,7 +291,8 @@ void PYROShooter::runFlywheel(int rpm)
 }
 
 int flywheelMillisSince;
-
+double lastVelocity = 0;
+double currentVelocity = 0;
 void PYROShooter::teleop(pros::Controller Cont)
 {/*
   runFlywheel(500);
@@ -324,11 +325,27 @@ void PYROShooter::teleop(pros::Controller Cont)
 
   if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
   {
+    int shooterStartTime = pros::millis();
+    int shooterDeltaTime = 0;
+    lastVelocity = shooter.FrontMotor->get_actual_velocity();
+    currentVelocity = 0;
+
     intake.PreFlywheelIntakePID.flipDisable(false);
     intake.MainIntakePID.flipDisable(false);
     //intake.MainIntakePID.reset();
     //intake.PreFlywheelIntakePID.reset();
     FlywheelPID.flipDisable(false);
+
+    while(fabs(currentVelocity - lastVelocity) > 5 || shooterDeltaTime < 500)
+    {
+      intake.MainIntakePID.controllerSet(0.8);
+      intake.PreFlywheelIntakePID.controllerSet(-0.8);
+      pros::delay(20);
+      lastVelocity = currentVelocity;
+      currentVelocity = shooter.FrontMotor->get_actual_velocity();
+      shooterDeltaTime = pros::millis() - shooterStartTime;
+    }
+
     //FlywheelPID.controllerSet(1);
     ///intake.MainIntakePID.setTarget(5000 + M_Intake_Main.get_position());
     ///intake.PreFlywheelIntakePID.setTarget(-5000 + M_Intake_Preflywheel.get_position());
@@ -345,15 +362,21 @@ void PYROShooter::teleop(pros::Controller Cont)
   }
   else if(Cont.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
   {
+    int shooterStartTime = pros::millis();
+    int shooterDeltaTime = 0;
+    lastVelocity = shooter.FrontMotor->get_actual_velocity();
+    currentVelocity = 0;
+
+
     if(isCurrentlyMid)
     {
-      firstShotAngle = 23;
-      secondShotAngle = 37;
+      firstShotAngle = 35;
+      secondShotAngle = 23;
       isCurrentlyMid = !isCurrentlyMid;
     }
     else
     {
-      firstShotAngle = 37;
+      firstShotAngle = 35;
       secondShotAngle = 23;
       isCurrentlyMid = !isCurrentlyMid;
     }
@@ -362,6 +385,9 @@ void PYROShooter::teleop(pros::Controller Cont)
 
     intake.MainIntakePID.flipDisable(false);
     intake.PreFlywheelIntakePID.flipDisable(false);
+    intake.MainIntakePID.controllerSet(0.8);
+    intake.PreFlywheelIntakePID.controllerSet(-0.8);
+
     //intake.MainIntakePID.reset();
     //intake.PreFlywheelIntakePID.reset();
     FlywheelPID.flipDisable(false);
@@ -371,6 +397,17 @@ void PYROShooter::teleop(pros::Controller Cont)
     ///runFlywheel(87);
     //pros::delay(500);
     //FlywheelPID.waitUntilSettled();
+
+    while(fabs(currentVelocity - lastVelocity) > 5 || shooterDeltaTime < 500)
+    {
+      intake.MainIntakePID.controllerSet(0.8);
+      intake.PreFlywheelIntakePID.controllerSet(-0.8);
+      pros::delay(20);
+      lastVelocity = currentVelocity;
+      currentVelocity = shooter.FrontMotor->get_actual_velocity();
+      shooterDeltaTime = pros::millis() - shooterStartTime;
+    }
+
     intake.MainIntakePID.setTarget(360 + M_Intake_Main.get_position());
     intake.PreFlywheelIntakePID.setTarget(360 + M_Intake_Preflywheel.get_position());
     pros::delay(50);
@@ -378,13 +415,18 @@ void PYROShooter::teleop(pros::Controller Cont)
 
     setHoodAngle(secondShotAngle);
     //FlywheelPID.controllerSet(1);
-    intake.MainIntakePID.setTarget(90 + M_Intake_Main.get_position());
-    intake.PreFlywheelIntakePID.setTarget(-90 + M_Intake_Preflywheel.get_position());
-    pros::delay(50);
-    intake.PreFlywheelIntakePID.waitUntilSettled();
+    ////intake.MainIntakePID.setTarget(90 + M_Intake_Main.get_position());
+    ////intake.PreFlywheelIntakePID.setTarget(-90 + M_Intake_Preflywheel.get_position());
+    ////pros::delay(50);
+    ////intake.PreFlywheelIntakePID.waitUntilSettled();
     //runFlywheel(87);
     //pros::delay(500);
-    FlywheelPID.waitUntilSettled();
+    ////FlywheelPID.waitUntilSettled();
+
+    intake.MainIntakePID.setTarget(180 + M_Intake_Main.get_position());
+    intake.PreFlywheelIntakePID.setTarget(-180 + M_Intake_Preflywheel.get_position());
+    intake.PreFlywheelIntakePID.waitUntilSettled();
+
     intake.MainIntakePID.setTarget(800 + M_Intake_Main.get_position());
     intake.PreFlywheelIntakePID.setTarget(800 + M_Intake_Preflywheel.get_position());
     pros::delay(50);
@@ -393,6 +435,8 @@ void PYROShooter::teleop(pros::Controller Cont)
     intake.MainIntakePID.flipDisable(true);
     intake.PreFlywheelIntakePID.flipDisable(true);
     FlywheelPID.flipDisable(true);
+
+    setHoodAngle(firstShotAngle);
 
     pros::lcd::print(7, "Shooting");
   }
